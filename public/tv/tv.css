@@ -1,0 +1,141 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #1a1a2e;
+  color: #eee;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.screen {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Waiting screen */
+#screen-waiting h1 {
+  font-size: 4rem;
+  margin-bottom: 2rem;
+  color: #e94560;
+}
+
+#screen-waiting .subtitle {
+  font-size: 2rem;
+  margin-top: 1.5rem;
+  color: #aaa;
+}
+
+#screen-waiting canvas {
+  border-radius: 12px;
+}
+
+/* Lobby screen */
+.lobby-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  padding: 2rem;
+}
+
+.lobby-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.lobby-main h1 {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  color: #e94560;
+}
+
+.lobby-main .subtitle {
+  font-size: 1.4rem;
+  color: #aaa;
+  margin-top: 1.5rem;
+}
+
+.lobby-qr,
+.playing-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 1rem;
+}
+
+.lobby-qr canvas,
+.playing-qr canvas {
+  border-radius: 8px;
+}
+
+.lobby-qr p,
+.playing-qr p {
+  font-size: 0.9rem;
+  color: #888;
+  margin-top: 0.5rem;
+}
+
+/* Playing screen */
+.playing-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  padding: 2rem;
+}
+
+.playing-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.playing-main h1 {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  color: #e94560;
+}
+
+/* Player list */
+.player-list {
+  list-style: none;
+  width: 100%;
+  max-width: 500px;
+}
+
+.player-list li {
+  font-size: 2rem;
+  padding: 0.8rem 1.2rem;
+  margin: 0.4rem 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.host-badge {
+  font-size: 0.8rem;
+  background: #e94560;
+  color: #fff;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
