@@ -1,0 +1,169 @@
+{
+  "rounds": [
+    {
+      "name": "Easy",
+      "questions": [
+        {
+          "question": "What is the capital of France?",
+          "choices": ["London", "Paris", "Berlin", "Madrid"],
+          "answer": 1
+        },
+        {
+          "question": "How many legs does a spider have?",
+          "choices": ["6", "8", "10", "12"],
+          "answer": 1
+        },
+        {
+          "question": "What planet is known as the Red Planet?",
+          "choices": ["Venus", "Jupiter", "Mars", "Saturn"],
+          "answer": 2
+        },
+        {
+          "question": "What is the largest ocean on Earth?",
+          "choices": ["Atlantic", "Indian", "Arctic", "Pacific"],
+          "answer": 3
+        },
+        {
+          "question": "Which animal is known as the King of the Jungle?",
+          "choices": ["Tiger", "Lion", "Elephant", "Bear"],
+          "answer": 1
+        },
+        {
+          "question": "How many colors are in a rainbow?",
+          "choices": ["5", "6", "7", "8"],
+          "answer": 2
+        },
+        {
+          "question": "What is the freezing point of water in Celsius?",
+          "choices": ["-10", "0", "32", "100"],
+          "answer": 1
+        },
+        {
+          "question": "Which continent is the largest by area?",
+          "choices": ["Africa", "North America", "Europe", "Asia"],
+          "answer": 3
+        },
+        {
+          "question": "What gas do plants absorb from the atmosphere?",
+          "choices": ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+          "answer": 2
+        },
+        {
+          "question": "How many days are in a leap year?",
+          "choices": ["364", "365", "366", "367"],
+          "answer": 2
+        }
+      ]
+    },
+    {
+      "name": "Medium",
+      "questions": [
+        {
+          "question": "What year did the Titanic sink?",
+          "choices": ["1905", "1912", "1920", "1931"],
+          "answer": 1
+        },
+        {
+          "question": "Which element has the chemical symbol 'Au'?",
+          "choices": ["Silver", "Aluminum", "Gold", "Copper"],
+          "answer": 2
+        },
+        {
+          "question": "What is the smallest country in the world by area?",
+          "choices": ["Monaco", "Vatican City", "San Marino", "Liechtenstein"],
+          "answer": 1
+        },
+        {
+          "question": "Who painted the Mona Lisa?",
+          "choices": ["Michelangelo", "Raphael", "Donatello", "Leonardo da Vinci"],
+          "answer": 3
+        },
+        {
+          "question": "What is the hardest natural substance on Earth?",
+          "choices": ["Granite", "Diamond", "Quartz", "Topaz"],
+          "answer": 1
+        },
+        {
+          "question": "Which planet has the most moons?",
+          "choices": ["Jupiter", "Saturn", "Uranus", "Neptune"],
+          "answer": 1
+        },
+        {
+          "question": "In what year did the Berlin Wall fall?",
+          "choices": ["1987", "1989", "1991", "1993"],
+          "answer": 1
+        },
+        {
+          "question": "What is the longest river in the world?",
+          "choices": ["Amazon", "Nile", "Mississippi", "Yangtze"],
+          "answer": 1
+        },
+        {
+          "question": "Which organ in the human body is the largest?",
+          "choices": ["Liver", "Brain", "Skin", "Lungs"],
+          "answer": 2
+        },
+        {
+          "question": "What is the speed of light in km/s (approximately)?",
+          "choices": ["150,000", "200,000", "300,000", "400,000"],
+          "answer": 2
+        }
+      ]
+    },
+    {
+      "name": "Hard",
+      "questions": [
+        {
+          "question": "What is the only mammal capable of true flight?",
+          "choices": ["Flying Squirrel", "Bat", "Sugar Glider", "Colugo"],
+          "answer": 1
+        },
+        {
+          "question": "In which year was the first email sent?",
+          "choices": ["1965", "1971", "1978", "1983"],
+          "answer": 1
+        },
+        {
+          "question": "What is the rarest blood type?",
+          "choices": ["O-negative", "B-negative", "AB-negative", "A-negative"],
+          "answer": 2
+        },
+        {
+          "question": "Which country has the most time zones?",
+          "choices": ["Russia", "USA", "France", "China"],
+          "answer": 2
+        },
+        {
+          "question": "What is the deepest point in the ocean?",
+          "choices": ["Tonga Trench", "Mariana Trench", "Puerto Rico Trench", "Java Trench"],
+          "answer": 1
+        },
+        {
+          "question": "Who developed the theory of general relativity?",
+          "choices": ["Isaac Newton", "Niels Bohr", "Albert Einstein", "Max Planck"],
+          "answer": 2
+        },
+        {
+          "question": "What is the chemical formula for table salt?",
+          "choices": ["NaOH", "NaCl", "KCl", "CaCl2"],
+          "answer": 1
+        },
+        {
+          "question": "Which language has the most native speakers worldwide?",
+          "choices": ["English", "Spanish", "Hindi", "Mandarin Chinese"],
+          "answer": 3
+        },
+        {
+          "question": "What is the tallest waterfall in the world?",
+          "choices": ["Niagara Falls", "Angel Falls", "Victoria Falls", "Iguazu Falls"],
+          "answer": 1
+        },
+        {
+          "question": "In computing, how many bits are in a byte?",
+          "choices": ["4", "6", "8", "16"],
+          "answer": 2
+        }
+      ]
+    }
+  ]
+}
