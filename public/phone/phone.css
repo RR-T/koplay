@@ -255,3 +255,225 @@ h2 {
   color: #ff6b6b;
   font-size: 1.2rem;
 }
+
+/* Acrophobia phone styles */
+.acro-phone-round {
+  font-size: 0.9rem;
+  color: #aaa;
+  text-align: center;
+  margin-bottom: 0.3rem;
+}
+
+.acro-phone-acronym {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #e94560;
+  text-align: center;
+  letter-spacing: 0.3em;
+  margin: 0.5rem 0;
+}
+
+.acro-phone-timer {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.acro-phone-progress {
+  font-size: 0.9rem;
+  color: #888;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.acro-phone-status {
+  text-align: center;
+  color: #aaa;
+  font-size: 1.1rem;
+  margin: 1rem 0;
+}
+
+.acro-phone-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.acro-phone-input {
+  font-size: 1.1rem;
+  padding: 0.8rem 1rem;
+  border: 2px solid #333;
+  border-radius: 8px;
+  background: #16213e;
+  color: #eee;
+  outline: none;
+  text-align: center;
+}
+
+.acro-phone-input:focus {
+  border-color: #e94560;
+}
+
+.acro-phone-hint {
+  font-size: 0.85rem;
+  color: #888;
+  text-align: center;
+}
+
+.acro-phone-validation {
+  font-size: 0.9rem;
+  text-align: center;
+  min-height: 1.2em;
+}
+
+.acro-phone-validation.valid {
+  color: #4ecdc4;
+}
+
+.acro-phone-validation.invalid {
+  color: #ff6b6b;
+}
+
+.acro-phone-submit-btn {
+  font-size: 1.2rem;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  background: #e94560;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.acro-phone-submit-btn:active {
+  background: #c73652;
+}
+
+.acro-phone-submit-btn:disabled {
+  background: #555;
+  cursor: default;
+}
+
+.acro-phone-label {
+  text-align: center;
+  color: #ccc;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.acro-phone-vote-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.acro-phone-vote-btn {
+  font-size: 1.1rem;
+  padding: 1rem;
+  border: 2px solid #333;
+  border-radius: 8px;
+  background: #16213e;
+  color: #eee;
+  cursor: pointer;
+  text-align: left;
+}
+
+.acro-phone-vote-btn:active {
+  border-color: #e94560;
+  background: #1a1a3e;
+}
+
+.acro-phone-result {
+  padding: 0.6rem 0.8rem;
+  margin: 0.4rem 0;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  border-left: 3px solid transparent;
+}
+
+.acro-phone-result.acro-phone-me {
+  border-left-color: #e94560;
+}
+
+.acro-phone-result-text {
+  font-size: 1rem;
+  margin-bottom: 0.2rem;
+}
+
+.acro-phone-result-meta {
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.acro-phone-gameover-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #e94560;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.acro-phone-rank {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  margin: 0.3rem 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  font-size: 1.1rem;
+}
+
+.acro-phone-rank.acro-phone-winner {
+  background: rgba(233, 69, 96, 0.15);
+  border: 2px solid #e94560;
+}
+
+.acro-phone-rank.acro-phone-me {
+  border-left: 3px solid #e94560;
+}
+
+.acro-phone-rank-pos {
+  color: #e94560;
+  font-weight: bold;
+  min-width: 2rem;
+}
+
+.acro-phone-rank-name {
+  flex: 1;
+}
+
+.acro-phone-rank-score {
+  color: #e94560;
+  font-weight: bold;
+}
+
+.acro-phone-play-again {
+  width: 100%;
+  padding: 0.8rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background: #e94560;
+  color: #fff;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.acro-phone-play-again:active {
+  background: #c73652;
+}
+
+.acro-phone-error {
+  text-align: center;
+  color: #ff6b6b;
+  font-size: 1.2rem;
+}
+
+.acro-phone-waiting {
+  text-align: center;
+}

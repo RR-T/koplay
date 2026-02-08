@@ -77,6 +77,7 @@ socket.on('error', (data) => {
 const availableGames = [
   { id: 'lobby', name: 'Lobby', description: 'Chill in the lobby' },
   { id: 'gorillas', name: 'Gorillas', description: 'Throw bananas across the skyline!' },
+  { id: 'acrophobia', name: 'Acrophobia', description: 'Make up funny acronyms and vote for the best!' },
 ];
 
 socket.on('session:state', (state) => {
@@ -114,6 +115,8 @@ socket.on('session:state', (state) => {
     const content = document.getElementById('playing-content');
     if (state.currentGame.id === 'gorillas') {
       GorillasPhone.render(content, state.gameState, myId, amHost, state.players, socket);
+    } else if (state.currentGame.id === 'acrophobia') {
+      AcrophobiaPhone.render(content, state.gameState, myId, amHost, state.players, socket);
     } else if (amHost) {
       content.innerHTML = '<p class="info">You\'re the host</p>';
     } else {

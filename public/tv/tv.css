@@ -140,6 +140,181 @@ body {
   letter-spacing: 0.05em;
 }
 
+/* Acrophobia TV styles */
+.acro-submitting,
+.acro-voting,
+.acro-results,
+.acro-gameover {
+  text-align: center;
+  width: 100%;
+  max-width: 800px;
+}
+
+.acro-round {
+  font-size: 1.2rem;
+  color: #aaa;
+  margin-bottom: 0.5rem;
+}
+
+.acro-acronym {
+  font-size: 6rem;
+  font-weight: bold;
+  color: #e94560;
+  letter-spacing: 0.4em;
+  margin: 1rem 0;
+}
+
+.acro-timer {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.acro-progress {
+  font-size: 1.1rem;
+  color: #888;
+  margin: 0.5rem 0 1rem;
+}
+
+.acro-options-list {
+  list-style: none;
+  text-align: left;
+  margin: 1.5rem 0;
+}
+
+.acro-vote-option {
+  font-size: 1.6rem;
+  padding: 0.8rem 1.2rem;
+  margin: 0.5rem 0;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+}
+
+.acro-option-num {
+  color: #e94560;
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.acro-results-list {
+  list-style: none;
+  text-align: left;
+  margin: 1.5rem 0;
+}
+
+.acro-result-item {
+  padding: 0.8rem 1.2rem;
+  margin: 0.5rem 0;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+}
+
+.acro-result-item.acro-has-votes {
+  border-left-color: #e94560;
+}
+
+.acro-result-text {
+  font-size: 1.4rem;
+  margin-bottom: 0.3rem;
+}
+
+.acro-result-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  color: #aaa;
+}
+
+.acro-result-votes {
+  color: #e94560;
+  font-weight: bold;
+}
+
+.acro-scoreboard {
+  margin-top: 1.5rem;
+}
+
+.acro-scoreboard h2 {
+  font-size: 1.2rem;
+  color: #aaa;
+  margin-bottom: 0.5rem;
+}
+
+.acro-scoreboard ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.acro-scoreboard li {
+  font-size: 1.1rem;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.acro-score-name {
+  color: #ccc;
+}
+
+.acro-score-val {
+  color: #e94560;
+  font-weight: bold;
+}
+
+.acro-gameover-title {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #e94560;
+  margin-bottom: 1.5rem;
+}
+
+.acro-ranking {
+  list-style: none;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.acro-rank-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.6rem;
+  padding: 0.8rem 1.2rem;
+  margin: 0.4rem 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.acro-rank-item.acro-winner {
+  background: rgba(233, 69, 96, 0.15);
+  border: 2px solid #e94560;
+}
+
+.acro-rank-pos {
+  color: #e94560;
+  font-weight: bold;
+  min-width: 2.5rem;
+}
+
+.acro-rank-name {
+  flex: 1;
+}
+
+.acro-rank-score {
+  color: #e94560;
+  font-weight: bold;
+}
+
+.acro-error {
+  font-size: 1.5rem;
+  color: #ff6b6b;
+  text-align: center;
+}
+
 /* Gorillas canvas */
 #game-display canvas {
   max-width: 100%;

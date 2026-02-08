@@ -21,6 +21,7 @@ app.get('/', (req, res) => res.redirect('/phone'));
 function broadcastState() {
   io.emit('session:state', session.getPublicState());
 }
+session.broadcastState = broadcastState;
 
 io.on('connection', (socket) => {
   const role = socket.handshake.query.role;

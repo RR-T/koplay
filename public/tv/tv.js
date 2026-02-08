@@ -65,6 +65,8 @@ socket.on('session:state', (state) => {
     const display = document.getElementById('game-display');
     if (state.currentGame.id === 'gorillas') {
       GorillasTV.render(display, state.gameState, state.players);
+    } else if (state.currentGame.id === 'acrophobia') {
+      AcrophobiaTV.render(display, state.gameState, state.players);
     } else {
       const list = document.createElement('ul');
       list.className = 'player-list';
