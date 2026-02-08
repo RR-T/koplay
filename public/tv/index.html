@@ -3,12 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TV Party Games</title>
+  <title>KoPlay</title>
   <link rel="stylesheet" href="tv.css">
 </head>
 <body>
-  <div id="screen-waiting" class="screen">
-    <h1>TV Party Games</h1>
+  <div id="screen-intro" class="screen">
+    <video id="intro-video" autoplay playsinline>
+      <source src="koplay.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <div id="screen-waiting" class="screen hidden">
+    <img src="icon.png" alt="KoPlay" class="waiting-logo" id="waiting-logo">
     <div id="qr-waiting"></div>
     <p class="subtitle">Scan to join!</p>
   </div>
@@ -16,7 +22,7 @@
   <div id="screen-lobby" class="screen hidden">
     <div class="lobby-layout">
       <div class="lobby-main">
-        <h1>Lobby</h1>
+        <h1>KoPlay</h1>
         <ul id="lobby-players" class="player-list"></ul>
         <p class="subtitle">Waiting for host to pick a game...</p>
       </div>

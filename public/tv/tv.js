@@ -1,10 +1,25 @@
 const socket = io({ query: { role: 'tv' } });
 
 const screens = {
+  intro: document.getElementById('screen-intro'),
   waiting: document.getElementById('screen-waiting'),
   lobby: document.getElementById('screen-lobby'),
   playing: document.getElementById('screen-playing'),
 };
+
+const introVideo = document.getElementById('intro-video');
+let introFinished = false;
+let pendingState = null;
+
+introVideo.addEventListener('ended', () => {
+  introFinished = true;
+  if (pendingState) {
+    handleState(pendingState);
+    pendingState = null;
+  } else {
+    showScreen('waiting');
+  }
+});
 
 const phoneUrl = window.location.origin + '/phone';
 let qrGenerated = false;
@@ -50,7 +65,7 @@ function renderPlayerList(container, players) {
   }
 }
 
-socket.on('session:state', (state) => {
+function handleState(state) {
   generateQRCodes();
 
   if (state.state === 'waiting') {
@@ -77,4 +92,12 @@ socket.on('session:state', (state) => {
       display.appendChild(list);
     }
   }
+}
+
+socket.on('session:state', (state) => {
+  if (!introFinished) {
+    pendingState = state;
+    return;
+  }
+  handleState(state);
 });

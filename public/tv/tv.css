@@ -24,11 +24,21 @@ body {
   justify-content: center;
 }
 
+/* Intro screen */
+#screen-intro {
+  background: #000;
+}
+
+#intro-video {
+  max-width: 100%;
+  max-height: 100vh;
+}
+
 /* Waiting screen */
-#screen-waiting h1 {
-  font-size: 4rem;
+.waiting-logo {
+  width: 200px;
+  height: 200px;
   margin-bottom: 2rem;
-  color: #e94560;
 }
 
 #screen-waiting .subtitle {
