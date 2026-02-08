@@ -63,10 +63,14 @@ socket.on('session:state', (state) => {
     document.getElementById('game-title').textContent = state.currentGame.name;
 
     const display = document.getElementById('game-display');
-    const list = document.createElement('ul');
-    list.className = 'player-list';
-    renderPlayerList(list, state.players);
-    display.innerHTML = '';
-    display.appendChild(list);
+    if (state.currentGame.id === 'gorillas') {
+      GorillasTV.render(display, state.gameState, state.players);
+    } else {
+      const list = document.createElement('ul');
+      list.className = 'player-list';
+      renderPlayerList(list, state.players);
+      display.innerHTML = '';
+      display.appendChild(list);
+    }
   }
 });

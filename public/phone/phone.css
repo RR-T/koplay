@@ -142,3 +142,116 @@ h2 {
   font-weight: bold;
   letter-spacing: 0.05em;
 }
+
+/* Gorillas phone styles */
+.gorillas-controls,
+.gorillas-waiting,
+.gorillas-spectator,
+.gorillas-gameover {
+  text-align: center;
+}
+
+.gorillas-status {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #e94560;
+  margin-bottom: 1rem;
+}
+
+.gorillas-scores {
+  font-size: 1.1rem;
+  margin-bottom: 0.8rem;
+}
+
+.score-p1 { color: #ff8c00; }
+.score-p2 { color: #4a9eff; }
+.score-sep { color: #888; }
+
+.gorillas-wind {
+  font-size: 0.95rem;
+  color: #aaa;
+  margin-bottom: 1.2rem;
+}
+
+.gorillas-slider-group {
+  margin-bottom: 1rem;
+}
+
+.gorillas-slider-group label {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+  color: #ccc;
+}
+
+.gorillas-slider-group input[type="range"] {
+  width: 100%;
+  height: 36px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #16213e;
+  border-radius: 8px;
+  outline: none;
+}
+
+.gorillas-slider-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e94560;
+  cursor: pointer;
+}
+
+.gorillas-throw {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.4rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background: #e94560;
+  color: #fff;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.gorillas-throw:active {
+  background: #c73652;
+}
+
+.gorillas-throw:disabled {
+  background: #666;
+  cursor: default;
+}
+
+.gorillas-winner {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #e94560;
+  margin-bottom: 1rem;
+}
+
+.gorillas-play-again {
+  width: 100%;
+  padding: 0.8rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background: #e94560;
+  color: #fff;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.gorillas-play-again:active {
+  background: #c73652;
+}
+
+.gorillas-error {
+  text-align: center;
+  color: #ff6b6b;
+  font-size: 1.2rem;
+}

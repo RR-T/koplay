@@ -76,6 +76,7 @@ socket.on('error', (data) => {
 // Available games (fetched from state or hardcoded for now — the server could provide this)
 const availableGames = [
   { id: 'lobby', name: 'Lobby', description: 'Chill in the lobby' },
+  { id: 'gorillas', name: 'Gorillas', description: 'Throw bananas across the skyline!' },
 ];
 
 socket.on('session:state', (state) => {
@@ -111,7 +112,9 @@ socket.on('session:state', (state) => {
     renderPlayerList(document.getElementById('playing-players'), state.players);
 
     const content = document.getElementById('playing-content');
-    if (amHost) {
+    if (state.currentGame.id === 'gorillas') {
+      GorillasPhone.render(content, state.gameState, myId, amHost, state.players, socket);
+    } else if (amHost) {
       content.innerHTML = '<p class="info">You\'re the host</p>';
     } else {
       content.innerHTML = '<p class="info">Game in progress</p>';
