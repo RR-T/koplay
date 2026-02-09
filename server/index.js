@@ -15,16 +15,9 @@ const PORT = process.env.PORT || 3000;
 const distPath = path.join(__dirname, '..', 'client', 'dist');
 app.use(express.static(distPath));
 
-// Routes — serve entry HTML for each app (no-cache so Tizen WebView always gets fresh hashes)
-const noCacheHeaders = { 'Cache-Control': 'no-cache, no-store, must-revalidate' };
-app.get('/tv', (req, res) => {
-  res.set(noCacheHeaders);
-  res.sendFile(path.join(distPath, 'tv.html'));
-});
-app.get('/phone', (req, res) => {
-  res.set(noCacheHeaders);
-  res.sendFile(path.join(distPath, 'phone.html'));
-});
+// Routes — serve entry HTML for each app
+app.get('/tv', (req, res) => res.sendFile(path.join(distPath, 'tv.html')));
+app.get('/phone', (req, res) => res.sendFile(path.join(distPath, 'phone.html')));
 app.get('/', (req, res) => res.redirect('/phone'));
 
 function broadcastState() {
@@ -32,17 +25,10 @@ function broadcastState() {
 }
 session.broadcastState = broadcastState;
 
-let tvSocketId = null;
-
 io.on('connection', (socket) => {
   const role = socket.handshake.query.role;
 
   if (role === 'tv') {
-    if (tvSocketId && io.sockets.sockets.get(tvSocketId)) {
-      socket.emit('tv:blocked');
-      return;
-    }
-    tvSocketId = socket.id;
     socket.join('tv');
     session.reset();
     broadcastState();
@@ -94,11 +80,8 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     if (role === 'tv') {
-      if (tvSocketId === socket.id) {
-        tvSocketId = null;
-        session.reset();
-        broadcastState();
-      }
+      session.reset();
+      broadcastState();
     }
 
     if (role === 'player') {
