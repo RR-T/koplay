@@ -5,11 +5,145 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KoPlay</title>
     <style>
-        * { margin: 0; padding: 0; }
-        html, body, iframe { width: 100%; height: 100%; border: none; overflow: hidden; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: #1a1a2e; }
+        iframe { width: 100%; height: 100%; border: none; }
+
+        #exit-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(26, 26, 46, 0.92);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #eee;
+        }
+        #exit-overlay.visible { display: flex; }
+
+        #exit-overlay h1 {
+            font-size: 3rem;
+            margin-bottom: 2.5rem;
+            font-weight: 600;
+        }
+
+        .exit-buttons {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .exit-btn {
+            padding: 1rem 3rem;
+            font-size: 1.8rem;
+            font-weight: 600;
+            border: 3px solid transparent;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            outline: none;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+
+        .exit-btn.focused {
+            transform: scale(1.08);
+            border-color: #fff;
+        }
+
+        #btn-yes {
+            background: #e94560;
+            color: #fff;
+        }
+
+        #btn-no {
+            background: #333;
+            color: #eee;
+        }
     </style>
 </head>
 <body>
-    <iframe src="https://koplay.example.com/tv" allow="fullscreen"></iframe>
+    <iframe id="tv-frame" src="https://koplay.example.com/tv" allow="fullscreen"></iframe>
+    <div id="exit-overlay">
+        <h1>End game and exit?</h1>
+        <div class="exit-buttons">
+            <button id="btn-yes" class="exit-btn">Yes</button>
+            <button id="btn-no" class="exit-btn focused">No</button>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var overlay = document.getElementById('exit-overlay');
+            var btnYes = document.getElementById('btn-yes');
+            var btnNo = document.getElementById('btn-no');
+            var focusIndex = 1; // 0 = Yes, 1 = No (default to No)
+            var buttons = [btnYes, btnNo];
+
+            function updateFocus() {
+                buttons.forEach(function (btn, i) {
+                    btn.classList.toggle('focused', i === focusIndex);
+                });
+            }
+
+            function showOverlay() {
+                focusIndex = 1; // default to No
+                updateFocus();
+                overlay.classList.add('visible');
+            }
+
+            function hideOverlay() {
+                overlay.classList.remove('visible');
+            }
+
+            function exitApp() {
+                try {
+                    tizen.application.getCurrentApplication().exit();
+                } catch (e) {
+                    // Fallback for non-Tizen environments
+                    window.close();
+                }
+            }
+
+            document.addEventListener('keydown', function (e) {
+                var BACK = 10009;
+                var LEFT = 37;
+                var RIGHT = 39;
+                var ENTER = 13;
+
+                if (e.keyCode === BACK) {
+                    e.preventDefault();
+                    if (overlay.classList.contains('visible')) {
+                        hideOverlay();
+                    } else {
+                        showOverlay();
+                    }
+                    return;
+                }
+
+                if (!overlay.classList.contains('visible')) return;
+
+                if (e.keyCode === LEFT) {
+                    focusIndex = 0;
+                    updateFocus();
+                } else if (e.keyCode === RIGHT) {
+                    focusIndex = 1;
+                    updateFocus();
+                } else if (e.keyCode === ENTER) {
+                    if (focusIndex === 0) {
+                        exitApp();
+                    } else {
+                        hideOverlay();
+                    }
+                }
+            });
+
+            // Register Tizen remote keys
+            try {
+                tizen.tvinputdevice.registerKey('Back');
+            } catch (e) {
+                // Not running on Tizen
+            }
+        })();
+    </script>
 </body>
 </html>

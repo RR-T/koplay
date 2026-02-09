@@ -6,7 +6,7 @@ import LobbyScreen from './screens/LobbyScreen';
 import PlayingScreen from './screens/PlayingScreen';
 
 export default function App() {
-  const { sessionState } = useSocket();
+  const { sessionState, blocked } = useSocket();
   const [introFinished, setIntroFinished] = useState(false);
   const pendingStateRef = useRef(null);
   const [activeState, setActiveState] = useState(null);
@@ -28,6 +28,15 @@ export default function App() {
       setActiveState(pendingStateRef.current);
       pendingStateRef.current = null;
     }
+  }
+
+  if (blocked) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-surface text-white">
+        <img src="/icon.png" alt="KoPlay" className="w-48 mb-8 opacity-60" />
+        <p className="text-2xl text-muted-light">Another device is acting as TV</p>
+      </div>
+    );
   }
 
   if (!introFinished) {
