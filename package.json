@@ -1,10 +1,13 @@
 {
   "name": "tv-party-games",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "JackBox-style party games for Samsung TV + phone controllers",
   "main": "server/index.js",
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "build": "npm --prefix client run build",
+    "dev:server": "node server/index.js",
+    "dev:client": "npm --prefix client run dev"
   },
   "dependencies": {
     "express": "^4.21.0",

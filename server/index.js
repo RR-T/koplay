@@ -11,11 +11,13 @@ const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
 
-// Static files
-app.use('/tv', express.static(path.join(__dirname, '..', 'public', 'tv')));
-app.use('/phone', express.static(path.join(__dirname, '..', 'public', 'phone')));
+// Static files — serve built client from client/dist
+const distPath = path.join(__dirname, '..', 'client', 'dist');
+app.use(express.static(distPath));
 
-// Routes
+// Routes — serve entry HTML for each app
+app.get('/tv', (req, res) => res.sendFile(path.join(distPath, 'tv.html')));
+app.get('/phone', (req, res) => res.sendFile(path.join(distPath, 'phone.html')));
 app.get('/', (req, res) => res.redirect('/phone'));
 
 function broadcastState() {
@@ -35,13 +37,13 @@ io.on('connection', (socket) => {
   if (role === 'player') {
     socket.emit('session:state', session.getPublicState());
 
-    socket.on('player:join', ({ name }) => {
+    socket.on('player:join', ({ name, avatarId, noiseId }) => {
       if (!name || typeof name !== 'string' || !name.trim()) {
         socket.emit('error', { message: 'Name is required' });
         return;
       }
 
-      const result = session.addPlayer(socket.id, name.trim());
+      const result = session.addPlayer(socket.id, name.trim(), avatarId, noiseId);
       if (result.error) {
         socket.emit('error', { message: result.error });
         return;
@@ -96,5 +98,5 @@ io.on('connection', (socket) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`TV Party Games running on port ${PORT}`);
+  console.log(`KoPlay is running on port ${PORT}`);
 });

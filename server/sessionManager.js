@@ -11,7 +11,7 @@ class SessionManager {
     this.gameState = null;
   }
 
-  addPlayer(id, name) {
+  addPlayer(id, name, avatarId, noiseId) {
     if (this.players.has(id)) {
       return { error: 'Already joined' };
     }
@@ -20,9 +20,15 @@ class SessionManager {
       if (player.name.toLowerCase() === name.toLowerCase()) {
         return { error: 'Name already taken' };
       }
+      if (avatarId && player.avatarId === avatarId) {
+        return { error: 'Avatar already taken' };
+      }
+      if (noiseId && player.noiseId === noiseId) {
+        return { error: 'Sound already taken' };
+      }
     }
 
-    this.players.set(id, { name });
+    this.players.set(id, { name, avatarId: avatarId || null, noiseId: noiseId || null });
 
     if (!this.hostId) {
       this.hostId = id;
@@ -56,14 +62,26 @@ class SessionManager {
 
   getPublicState() {
     const players = [];
+    const takenAvatars = [];
+    const takenNoises = [];
     for (const [id, player] of this.players) {
-      players.push({ id, name: player.name, isHost: id === this.hostId });
+      players.push({
+        id,
+        name: player.name,
+        isHost: id === this.hostId,
+        avatarId: player.avatarId,
+        noiseId: player.noiseId,
+      });
+      if (player.avatarId) takenAvatars.push(player.avatarId);
+      if (player.noiseId) takenNoises.push(player.noiseId);
     }
 
     return {
       state: this.state,
       hostId: this.hostId,
       players,
+      takenAvatars,
+      takenNoises,
       currentGame: this.currentGame,
       gameState: this.gameState,
     };

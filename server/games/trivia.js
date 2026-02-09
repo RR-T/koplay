@@ -1,6 +1,7 @@
 const questionsData = require('./questions.json');
 
 const QUESTION_TIME = 15;
+const PRE_REVEAL_TIME = 2.5;
 const REVEAL_TIME = 5;
 const ROUND_END_TIME = 8;
 const MIN_PLAYERS = 1;
@@ -52,6 +53,7 @@ function startQuestion(session) {
   gs.totalPlayers = activePlayers(session).length;
   gs.correctIndex = null;
   gs.playerResults = null;
+  gs.recentAnswers = [];
   gs.timer = {
     endsAt: Date.now() + QUESTION_TIME * 1000,
     duration: QUESTION_TIME,
@@ -67,6 +69,26 @@ function startQuestion(session) {
 
 function endQuestion(session) {
   clearTimer();
+  if (!session.gameState) return;
+
+  const gs = session.gameState;
+  gs.phase = 'preReveal';
+  gs.timer = {
+    endsAt: Date.now() + PRE_REVEAL_TIME * 1000,
+    duration: PRE_REVEAL_TIME,
+  };
+
+  session.broadcastState();
+
+  phaseTimer = setTimeout(() => {
+    phaseTimer = null;
+    showReveal(session);
+  }, PRE_REVEAL_TIME * 1000);
+}
+
+function showReveal(session) {
+  clearTimer();
+  if (!session.gameState) return;
 
   const q = getCurrentQuestion(session);
   const gs = session.gameState;
@@ -84,12 +106,15 @@ function endQuestion(session) {
     playerResults.push({
       name: player ? player.name : '(left)',
       correct,
+      avatarId: player ? player.avatarId : null,
+      choiceIndex: answer != null ? answer : null,
     });
   }
 
   gs.phase = 'reveal';
   gs.correctIndex = q.answer;
   gs.playerResults = playerResults;
+  gs.recentAnswers = [];
   gs.timer = {
     endsAt: Date.now() + REVEAL_TIME * 1000,
     duration: REVEAL_TIME,
@@ -105,6 +130,7 @@ function endQuestion(session) {
 
 function nextQuestion(session) {
   clearTimer();
+  if (!session.gameState) return;
   const gs = session.gameState;
   const totalQuestions = shuffledRounds[gs.round - 1].length;
 
@@ -142,6 +168,7 @@ function showRoundEnd(session) {
 
 function nextRound(session) {
   clearTimer();
+  if (!session.gameState) return;
   const gs = session.gameState;
 
   gs.round++;
@@ -248,6 +275,15 @@ module.exports = {
 
       roundAnswers.set(playerId, index);
       session.gameState.answeredCount = roundAnswers.size;
+
+      const player = session.players.get(playerId);
+      if (player) {
+        session.gameState.recentAnswers.push({
+          playerId,
+          avatarId: player.avatarId,
+          noiseId: player.noiseId,
+        });
+      }
 
       if (!checkAllAnswered(session)) {
         session.broadcastState();
