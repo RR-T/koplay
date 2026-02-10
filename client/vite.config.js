@@ -13,6 +13,7 @@ export default defineConfig({
       },
     },
     outDir: 'dist',
+    target: 'es2019',
   },
   server: {
     proxy: {
