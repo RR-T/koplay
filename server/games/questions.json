@@ -4,53 +4,53 @@
       "name": "Easy",
       "questions": [
         {
-          "question": "What is the capital of France?",
-          "choices": ["London", "Paris", "Berlin", "Madrid"],
+          "question": "What did God create on the first day?",
+          "choices": ["Animals", "Light", "Humans", "Plants"],
           "answer": 1
         },
         {
-          "question": "How many legs does a spider have?",
-          "choices": ["6", "8", "10", "12"],
+          "question": "What did God call the light?",
+          "choices": ["Heaven", "Day", "Earth", "Life"],
           "answer": 1
         },
         {
-          "question": "What planet is known as the Red Planet?",
-          "choices": ["Venus", "Jupiter", "Mars", "Saturn"],
+          "question": "On which day did God create the sun, moon, and stars?",
+          "choices": ["First", "Second", "Fourth", "Sixth"],
           "answer": 2
         },
         {
-          "question": "What is the largest ocean on Earth?",
-          "choices": ["Atlantic", "Indian", "Arctic", "Pacific"],
-          "answer": 3
-        },
-        {
-          "question": "Which animal is known as the King of the Jungle?",
-          "choices": ["Tiger", "Lion", "Elephant", "Bear"],
-          "answer": 1
-        },
-        {
-          "question": "How many colors are in a rainbow?",
-          "choices": ["5", "6", "7", "8"],
+          "question": "What did God create on the sixth day?",
+          "choices": ["Birds", "Fish", "Humans and animals", "Sea"],
           "answer": 2
         },
         {
-          "question": "What is the freezing point of water in Celsius?",
-          "choices": ["-10", "0", "32", "100"],
-          "answer": 1
-        },
-        {
-          "question": "Which continent is the largest by area?",
-          "choices": ["Africa", "North America", "Europe", "Asia"],
-          "answer": 3
-        },
-        {
-          "question": "What gas do plants absorb from the atmosphere?",
-          "choices": ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+          "question": "What was the name of the first man?",
+          "choices": ["Noah", "Abraham", "Adam", "Moses"],
           "answer": 2
         },
         {
-          "question": "How many days are in a leap year?",
-          "choices": ["364", "365", "366", "367"],
+          "question": "What was the name of the first woman?",
+          "choices": ["Sarah", "Eve", "Ruth", "Mary"],
+          "answer": 1
+        },
+        {
+          "question": "Where did God place Adam and Eve?",
+          "choices": ["Mount Sinai", "Garden of Eden", "Babylon", "Jerusalem"],
+          "answer": 1
+        },
+        {
+          "question": "Which tree were Adam and Eve forbidden to eat from?",
+          "choices": ["Tree of Life", "Olive Tree", "Tree of the Knowledge of Good and Evil", "Fig Tree"],
+          "answer": 2
+        },
+        {
+          "question": "Which animal tempted Eve?",
+          "choices": ["Lion", "Serpent", "Eagle", "Ox"],
+          "answer": 1
+        },
+        {
+          "question": "What happened after Adam and Eve ate the forbidden fruit?",
+          "choices": ["They fell asleep", "They became invisible", "They realized they were naked", "They left the garden immediately"],
           "answer": 2
         }
       ]
@@ -59,54 +59,54 @@
       "name": "Medium",
       "questions": [
         {
-          "question": "What year did the Titanic sink?",
-          "choices": ["1905", "1912", "1920", "1931"],
-          "answer": 1
-        },
-        {
-          "question": "Which element has the chemical symbol 'Au'?",
-          "choices": ["Silver", "Aluminum", "Gold", "Copper"],
+          "question": "What did God create on the second day?",
+          "choices": ["Land", "Animals", "The expanse (sky) separating waters", "Plants"],
           "answer": 2
         },
         {
-          "question": "What is the smallest country in the world by area?",
-          "choices": ["Monaco", "Vatican City", "San Marino", "Liechtenstein"],
+          "question": "What did God create on the third day?",
+          "choices": ["Sun and moon", "Land and vegetation", "Animals", "Humans"],
           "answer": 1
         },
         {
-          "question": "Who painted the Mona Lisa?",
-          "choices": ["Michelangelo", "Raphael", "Donatello", "Leonardo da Vinci"],
-          "answer": 3
-        },
-        {
-          "question": "What is the hardest natural substance on Earth?",
-          "choices": ["Granite", "Diamond", "Quartz", "Topaz"],
-          "answer": 1
-        },
-        {
-          "question": "Which planet has the most moons?",
-          "choices": ["Jupiter", "Saturn", "Uranus", "Neptune"],
-          "answer": 1
-        },
-        {
-          "question": "In what year did the Berlin Wall fall?",
-          "choices": ["1987", "1989", "1991", "1993"],
-          "answer": 1
-        },
-        {
-          "question": "What is the longest river in the world?",
-          "choices": ["Amazon", "Nile", "Mississippi", "Yangtze"],
-          "answer": 1
-        },
-        {
-          "question": "Which organ in the human body is the largest?",
-          "choices": ["Liver", "Brain", "Skin", "Lungs"],
+          "question": "What did God give humans dominion over?",
+          "choices": ["Only the land", "Only animals", "All living creatures and the earth", "Only the seas"],
           "answer": 2
         },
         {
-          "question": "What is the speed of light in km/s (approximately)?",
-          "choices": ["150,000", "200,000", "300,000", "400,000"],
+          "question": "From what part of Adam did God create Eve?",
+          "choices": ["Head", "Hand", "Rib", "Foot"],
           "answer": 2
+        },
+        {
+          "question": "What did Adam name his wife?",
+          "choices": ["Eve", "Lilith", "Hannah", "Deborah"],
+          "answer": 0
+        },
+        {
+          "question": "Which two trees are specifically named in the middle of the garden?",
+          "choices": ["Fig and Olive", "Apple and Cedar", "Tree of Life and Tree of Knowledge of Good and Evil", "Palm and Vine"],
+          "answer": 2
+        },
+        {
+          "question": "What did the serpent claim would happen if Eve ate the fruit?",
+          "choices": ["She would die instantly", "She would become like God, knowing good and evil", "She would forget God", "She would lose her voice"],
+          "answer": 1
+        },
+        {
+          "question": "What did Adam and Eve use to cover themselves?",
+          "choices": ["Animal skins", "Leaves sewn together", "Cloth", "Bark"],
+          "answer": 1
+        },
+        {
+          "question": "What time of day did God walk in the garden when Adam and Eve hid?",
+          "choices": ["Morning", "Noon", "Evening breeze", "Night"],
+          "answer": 2
+        },
+        {
+          "question": "What punishment did God give the serpent?",
+          "choices": ["To fly", "To crawl on its belly", "To lose its voice", "To live in the sea"],
+          "answer": 1
         }
       ]
     },
@@ -114,54 +114,54 @@
       "name": "Hard",
       "questions": [
         {
-          "question": "What is the only mammal capable of true flight?",
-          "choices": ["Flying Squirrel", "Bat", "Sugar Glider", "Colugo"],
+          "question": "What Hebrew phrase is translated as \"very good\" after creation was completed?",
+          "choices": ["Tov meod", "Elohim bara", "Shalom tov", "Adamah hayah"],
+          "answer": 0
+        },
+        {
+          "question": "How many times does God declare creation \"good\" in Genesis 1?",
+          "choices": ["5", "6", "7", "8"],
           "answer": 1
         },
         {
-          "question": "In which year was the first email sent?",
-          "choices": ["1965", "1971", "1978", "1983"],
+          "question": "What is the name of the river that divides into four headwaters in Eden?",
+          "choices": ["Tigris", "Pishon", "Jordan", "Nile"],
           "answer": 1
         },
         {
-          "question": "What is the rarest blood type?",
-          "choices": ["O-negative", "B-negative", "AB-negative", "A-negative"],
-          "answer": 2
-        },
-        {
-          "question": "Which country has the most time zones?",
-          "choices": ["Russia", "USA", "France", "China"],
-          "answer": 2
-        },
-        {
-          "question": "What is the deepest point in the ocean?",
-          "choices": ["Tonga Trench", "Mariana Trench", "Puerto Rico Trench", "Java Trench"],
-          "answer": 1
-        },
-        {
-          "question": "Who developed the theory of general relativity?",
-          "choices": ["Isaac Newton", "Niels Bohr", "Albert Einstein", "Max Planck"],
-          "answer": 2
-        },
-        {
-          "question": "What is the chemical formula for table salt?",
-          "choices": ["NaOH", "NaCl", "KCl", "CaCl2"],
-          "answer": 1
-        },
-        {
-          "question": "Which language has the most native speakers worldwide?",
-          "choices": ["English", "Spanish", "Hindi", "Mandarin Chinese"],
+          "question": "Which of the following is NOT one of the four rivers mentioned in Genesis 2?",
+          "choices": ["Pishon", "Gihon", "Euphrates", "Jordan"],
           "answer": 3
         },
         {
-          "question": "What is the tallest waterfall in the world?",
-          "choices": ["Niagara Falls", "Angel Falls", "Victoria Falls", "Iguazu Falls"],
+          "question": "What material is mentioned as being found in the land of Havilah?",
+          "choices": ["Silver", "Gold", "Iron", "Bronze"],
           "answer": 1
         },
         {
-          "question": "In computing, how many bits are in a byte?",
-          "choices": ["4", "6", "8", "16"],
+          "question": "What additional substances are mentioned alongside gold in Havilah?",
+          "choices": ["Onyx and bdellium", "Pearls and amber", "Iron and clay", "Salt and copper"],
+          "answer": 0
+        },
+        {
+          "question": "What phrase does Adam use when he first sees Eve?",
+          "choices": ["Mother of all living", "Bone of my bones and flesh of my flesh", "Blessed are you", "Gift from God"],
+          "answer": 1
+        },
+        {
+          "question": "According to Genesis 2:24, what happens when a man marries a woman?",
+          "choices": ["He gains wisdom", "He leaves his father and mother and becomes one flesh with his wife", "He inherits land", "He becomes king"],
+          "answer": 1
+        },
+        {
+          "question": "What reason does Eve give for eating the fruit when questioned by God?",
+          "choices": ["She was hungry", "Adam told her to", "The serpent deceived her", "She wanted power"],
           "answer": 2
+        },
+        {
+          "question": "What consequence does God pronounce specifically on the ground because of Adam?",
+          "choices": ["It becomes barren forever", "It produces thorns and thistles", "It floods", "It turns to dust"],
+          "answer": 1
         }
       ]
     }
