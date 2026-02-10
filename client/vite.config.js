@@ -65,7 +65,7 @@ export default defineConfig({
       },
     },
     outDir: 'dist',
-    target: 'es2019',
+    target: 'chrome63',
   },
   server: {
     proxy: {
