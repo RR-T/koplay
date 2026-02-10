@@ -1,6 +1,6 @@
 const questionsData = require('./questions.json');
 
-const QUESTION_TIME = 15;
+const QUESTION_TIME = 30;
 const PRE_REVEAL_TIME = 2.5;
 const REVEAL_TIME = 5;
 const ROUND_END_TIME = 8;

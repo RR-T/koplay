@@ -4,13 +4,13 @@ export default function Scoreboard({ scores, players, className = '' }) {
     .sort((a, b) => b.score - a.score);
 
   return (
-    <div className={`mt-4 ${className}`}>
-      <h3 className="text-lg font-semibold text-muted-light mb-2">Scores</h3>
-      <ul className="flex flex-wrap gap-4 justify-center">
+    <div className={`mt-6 ${className}`}>
+      <h3 className="text-2xl font-semibold text-muted-light mb-4">Scores</h3>
+      <ul className="flex flex-wrap gap-6 justify-center">
         {entries.map((e) => (
-          <li key={e.name} className="flex items-center gap-2">
-            <span className="text-muted-light">{e.name}</span>
-            <span className="font-bold text-accent">{e.score}</span>
+          <li key={e.name} className="flex items-center gap-3">
+            <span className="text-xl text-muted-light">{e.name}</span>
+            <span className="text-xl font-bold text-accent">{e.score}</span>
           </li>
         ))}
       </ul>
