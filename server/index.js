@@ -20,6 +20,18 @@ app.get('/tv', (req, res) => res.sendFile(path.join(distPath, 'tv.html')));
 app.get('/phone', (req, res) => res.sendFile(path.join(distPath, 'phone.html')));
 app.get('/', (req, res) => res.redirect('/phone'));
 
+// Temporary diagnostic page for TV browser testing
+app.get('/tv-test', (req, res) => {
+  res.send(`<!DOCTYPE html><html><body style="background:#1a1a2e;color:#eee;font-family:sans-serif;padding:2em">
+<h1>TV Browser Diagnostics</h1>
+<p id="ua"></p>
+<p id="mod"></p>
+<script>document.getElementById('ua').textContent='UA: '+navigator.userAgent;</script>
+<script type="module">document.getElementById('mod').textContent='ES Modules: SUPPORTED';</script>
+<script nomodule>document.getElementById('mod').textContent='ES Modules: NOT SUPPORTED';</script>
+</body></html>`);
+});
+
 function broadcastState() {
   io.emit('session:state', session.getPublicState());
 }
