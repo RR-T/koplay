@@ -15,6 +15,10 @@ const PORT = process.env.PORT || 3000;
 const distPath = path.join(__dirname, '..', 'client', 'dist');
 app.use(express.static(distPath));
 
+// Serve root public/ directory (media files: audio, images, etc.)
+// index:false prevents public/tv/index.html from intercepting the /tv route
+app.use(express.static(path.join(__dirname, '..', 'public'), { index: false }));
+
 // Routes — serve entry HTML for each app
 app.get('/tv', (req, res) => res.sendFile(path.join(distPath, 'tv.html')));
 app.get('/phone', (req, res) => res.sendFile(path.join(distPath, 'phone.html')));
@@ -52,6 +56,11 @@ io.on('connection', (socket) => {
     socket.on('player:join', ({ name, avatarId, noiseId }) => {
       if (!name || typeof name !== 'string' || !name.trim()) {
         socket.emit('error', { message: 'Name is required' });
+        return;
+      }
+
+      if (session.gameState?.joinLocked) {
+        socket.emit('error', { message: 'Game already started, cannot join' });
         return;
       }
 

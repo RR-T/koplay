@@ -33,9 +33,9 @@ export default function App() {
     }
   }, [sessionState, myId]);
 
-  const handleJoin = useCallback((name, avatarId, noiseId) => {
+  const handleJoin = useCallback((name) => {
     setError(null);
-    emit('player:join', { name, avatarId, noiseId });
+    emit('player:join', { name, avatarId: null, noiseId: null });
     setJoined(true);
     joinedRef.current = true;
   }, [emit]);
@@ -53,11 +53,11 @@ export default function App() {
 
   if (sessionState.state === 'waiting') {
     if (joined) return <WaitingScreen />;
-    return <JoinScreen onJoin={handleJoin} error={error} takenAvatars={sessionState.takenAvatars || []} takenNoises={sessionState.takenNoises || []} />;
+    return <JoinScreen onJoin={handleJoin} error={error} />;
   }
 
   if (!amPlayer) {
-    return <JoinScreen onJoin={handleJoin} error={error} takenAvatars={sessionState.takenAvatars || []} takenNoises={sessionState.takenNoises || []} />;
+    return <JoinScreen onJoin={handleJoin} error={error} />;
   }
 
   if (sessionState.state === 'lobby') {
@@ -77,5 +77,5 @@ export default function App() {
     );
   }
 
-  return <JoinScreen onJoin={handleJoin} error={error} takenAvatars={sessionState.takenAvatars || []} takenNoises={sessionState.takenNoises || []} />;
+  return <JoinScreen onJoin={handleJoin} error={error} />;
 }

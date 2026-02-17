@@ -1,8 +1,8 @@
 const questionsData = require('./questions.json');
 
-const QUESTION_TIME = 30;
-const PRE_REVEAL_TIME = 2.5;
-const REVEAL_TIME = 5;
+const QUESTION_TIME = 60;
+const PRE_REVEAL_TIME = 5;
+const REVEAL_TIME = 7;
 const ROUND_END_TIME = 8;
 const MIN_PLAYERS = 1;
 
@@ -53,7 +53,9 @@ function startQuestion(session) {
   gs.totalPlayers = activePlayers(session).length;
   gs.correctIndex = null;
   gs.playerResults = null;
+  gs.choiceCounts = null;
   gs.recentAnswers = [];
+  gs.earlyEnd = false;
   gs.timer = {
     endsAt: Date.now() + QUESTION_TIME * 1000,
     duration: QUESTION_TIME,
@@ -63,16 +65,17 @@ function startQuestion(session) {
 
   phaseTimer = setTimeout(() => {
     phaseTimer = null;
-    endQuestion(session);
+    endQuestion(session, false);
   }, QUESTION_TIME * 1000);
 }
 
-function endQuestion(session) {
+function endQuestion(session, early) {
   clearTimer();
   if (!session.gameState) return;
 
   const gs = session.gameState;
   gs.phase = 'preReveal';
+  gs.earlyEnd = early;
   gs.timer = {
     endsAt: Date.now() + PRE_REVEAL_TIME * 1000,
     duration: PRE_REVEAL_TIME,
@@ -111,9 +114,16 @@ function showReveal(session) {
     });
   }
 
+  // Count votes per choice
+  const choiceCounts = [0, 0, 0, 0];
+  for (const [, idx] of roundAnswers) {
+    if (idx != null && idx >= 0 && idx < 4) choiceCounts[idx]++;
+  }
+
   gs.phase = 'reveal';
   gs.correctIndex = q.answer;
   gs.playerResults = playerResults;
+  gs.choiceCounts = choiceCounts;
   gs.recentAnswers = [];
   gs.timer = {
     endsAt: Date.now() + REVEAL_TIME * 1000,
@@ -153,6 +163,7 @@ function showRoundEnd(session) {
   gs.choices = null;
   gs.correctIndex = null;
   gs.playerResults = null;
+  gs.choiceCounts = null;
   gs.timer = {
     endsAt: Date.now() + ROUND_END_TIME * 1000,
     duration: ROUND_END_TIME,
@@ -193,6 +204,7 @@ function gameOver(session) {
   gs.choices = null;
   gs.correctIndex = null;
   gs.playerResults = null;
+  gs.choiceCounts = null;
 
   const ranking = activePlayers(session).map((id) => ({
     id,
@@ -208,7 +220,7 @@ function gameOver(session) {
 function checkAllAnswered(session) {
   const players = activePlayers(session);
   if (roundAnswers.size >= players.length) {
-    endQuestion(session);
+    endQuestion(session, true);
     return true;
   }
   return false;
@@ -232,38 +244,84 @@ module.exports = {
     // Shuffle questions within each round
     shuffledRounds = questionsData.rounds.map((r) => shuffle(r.questions));
 
-    const scores = {};
-    for (const id of players) {
-      scores[id] = 0;
-    }
+    roundAnswers = null;
+    clearTimer();
 
     session.gameState = {
-      phase: 'question',
+      phase: 'characterSelect',
+      joinLocked: false,
       round: 1,
       totalRounds: shuffledRounds.length,
-      roundName: questionsData.rounds[0].name,
+      roundName: null,
       questionNum: 1,
       totalQuestions: shuffledRounds[0].length,
-      question: '',
-      choices: [],
+      question: null,
+      choices: null,
       answeredCount: 0,
       totalPlayers: players.length,
       correctIndex: null,
       playerResults: null,
-      scores,
+      choiceCounts: null,
+      scores: null,
+      recentAnswers: [],
+      earlyEnd: false,
       timer: null,
       finalRanking: null,
     };
-
-    roundAnswers = null;
-    clearTimer();
-    startQuestion(session);
 
     return session.gameState;
   },
 
   handleAction(session, playerId, action) {
     if (!session.gameState || session.gameState.phase === 'error') return;
+
+    if (action.type === 'selectCharacter') {
+      if (session.gameState.phase !== 'characterSelect') return;
+
+      const { avatarId, noiseId } = action;
+      if (!avatarId || !noiseId) return;
+
+      // Check uniqueness against other players
+      for (const [id, player] of session.players) {
+        if (id === playerId) continue;
+        if (player.avatarId === avatarId) {
+          return; // silently ignore — client UI should prevent this
+        }
+        if (player.noiseId === noiseId) {
+          return;
+        }
+      }
+
+      const player = session.players.get(playerId);
+      if (player) {
+        player.avatarId = avatarId;
+        player.noiseId = noiseId;
+      }
+
+      session.broadcastState();
+      return;
+    }
+
+    if (action.type === 'startGame') {
+      if (session.gameState.phase !== 'characterSelect') return;
+      if (playerId !== session.hostId) return;
+
+      const gs = session.gameState;
+      gs.joinLocked = true;
+
+      // Initialise scores for current players
+      const players = activePlayers(session);
+      gs.scores = {};
+      for (const id of players) {
+        gs.scores[id] = 0;
+      }
+
+      gs.totalPlayers = players.length;
+      gs.roundName = questionsData.rounds[0].name;
+
+      startQuestion(session);
+      return;
+    }
 
     if (action.type === 'answer') {
       if (session.gameState.phase !== 'question') return;
@@ -303,6 +361,12 @@ module.exports = {
 
   onPlayerLeave(session, playerId) {
     if (!session.gameState || session.gameState.phase === 'error') return;
+
+    // During character selection, just update the count and carry on
+    if (session.gameState.phase === 'characterSelect') {
+      session.gameState.totalPlayers = activePlayers(session).filter((id) => id !== playerId).length;
+      return;
+    }
 
     const remaining = activePlayers(session).filter((id) => id !== playerId);
     session.gameState.totalPlayers = remaining.length;
