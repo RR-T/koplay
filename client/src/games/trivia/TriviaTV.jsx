@@ -56,6 +56,22 @@ function AnsweredRow({ entries }) {
   );
 }
 
+function RoundIntroPhase({ gs }) {
+  return (
+    <div
+      className="h-screen flex flex-col items-center justify-center gap-6 bg-cover bg-center"
+      style={{ backgroundImage: 'url(/tv/background.jpg)' }}
+    >
+      <div className="bg-black/60 rounded-3xl px-20 py-14 flex flex-col items-center gap-4">
+        <p className="text-white/60 text-3xl font-semibold uppercase tracking-widest">
+          Round {gs.round} of {gs.totalRounds}
+        </p>
+        <p className="text-9xl font-black text-white">{gs.roundName}</p>
+      </div>
+    </div>
+  );
+}
+
 function CharacterSelectPhase({ gs, players }) {
   const phoneUrl = window.location.origin + '/phone';
   const soundedRef = useRef(new Set());
@@ -258,7 +274,12 @@ export default function TriviaTV({ gameState: gs, players }) {
   }, [gs.phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (gs.phase === 'question') {
+    if (gs.phase === 'roundIntro') {
+      stopAll();
+      const audio = new Audio('/tv/round_start.wav');
+      audio.play().catch(() => {});
+      questionAudioRef.current = audio;
+    } else if (gs.phase === 'question') {
       stopAll();
       setShowAnswers(false);
       // Play question.mp3 while the question is displayed before answers appear
@@ -310,6 +331,10 @@ export default function TriviaTV({ gameState: gs, players }) {
     return <CharacterSelectPhase gs={gs} players={players} />;
   }
 
+  if (gs.phase === 'roundIntro') {
+    return <RoundIntroPhase gs={gs} />;
+  }
+
   if (gs.phase === 'question') {
     return <QuestionPhase gs={gs} showAnswers={showAnswers} />;
   }
@@ -319,11 +344,20 @@ export default function TriviaTV({ gameState: gs, players }) {
   }
 
   if (gs.phase === 'roundEnd') {
+    const isLastRound = gs.round === gs.totalRounds;
     return (
-      <div className="flex flex-col items-center gap-8 w-full px-8">
-        <div className="text-4xl font-bold">End of {gs.roundName} Round</div>
+      <div
+        className="relative h-screen flex flex-col items-center justify-center gap-8 w-full px-8 bg-cover bg-center"
+        style={{ backgroundImage: 'url(/tv/background.jpg)' }}
+      >
+        {isLastRound && <ConfettiCanvas />}
+        <div className="text-5xl font-black text-white">
+          {isLastRound ? 'Final Scores!' : `End of ${gs.roundName} Round`}
+        </div>
         <Scoreboard scores={gs.scores} players={players} />
-        <div className="text-muted-light text-2xl">Next round starting soon...</div>
+        {!isLastRound && (
+          <div className="text-white/60 text-2xl">Next round starting soon...</div>
+        )}
       </div>
     );
   }
@@ -331,7 +365,6 @@ export default function TriviaTV({ gameState: gs, players }) {
   if (gs.phase === 'gameover') {
     return (
       <div className="relative flex flex-col items-center gap-8 w-full px-8">
-        <ConfettiCanvas />
         <div className="text-6xl font-bold">Game Over!</div>
         <Rankings finalRanking={gs.finalRanking} />
       </div>

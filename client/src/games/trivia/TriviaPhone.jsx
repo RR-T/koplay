@@ -229,6 +229,15 @@ export default function TriviaPhone({ gameState: gs, myId, isHost, players, emit
     return <QuestionPhase key={questionKey} gs={gs} emit={emit} />;
   }
 
+  if (gs.phase === 'roundIntro') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 p-6">
+        <p className="text-3xl font-black">{gs.roundName}</p>
+        <p className="text-muted-light">Round {gs.round} of {gs.totalRounds}</p>
+      </div>
+    );
+  }
+
   if (gs.phase === 'reveal') {
     const myPlayer = players.find((p) => p.id === myId);
     const me = gs.playerResults?.find((r) => myPlayer && r.name === myPlayer.name);
@@ -254,16 +263,17 @@ export default function TriviaPhone({ gameState: gs, myId, isHost, players, emit
   }
 
   if (gs.phase === 'roundEnd') {
+    const isLastRound = gs.round === gs.totalRounds;
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 p-6">
-        <div className="text-lg font-bold">End of {gs.roundName} Round</div>
+        <div className="text-lg font-bold">{isLastRound ? 'Final Scores!' : `End of ${gs.roundName} Round`}</div>
         <p className="text-muted-light">Your score: {gs.scores?.[myId] || 0}</p>
         {isHost && (
           <button
             onClick={() => emit('game:action', { type: 'advance' })}
             className="mt-4 w-full max-w-xs py-4 bg-accent hover:bg-accent-hover text-white text-xl font-bold rounded-xl"
           >
-            Next Round
+            {isLastRound ? 'Finish' : 'Next Round'}
           </button>
         )}
         {!isHost && <p className="text-muted text-sm">Waiting for host...</p>}

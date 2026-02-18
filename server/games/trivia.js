@@ -1,6 +1,7 @@
 const questionsData = require('./questions.json');
 
 const QUESTION_TIME = 60;
+const ROUND_INTRO_TIME = 4;
 const MIN_PLAYERS = 1;
 
 // Private state — never broadcast
@@ -33,6 +34,25 @@ function getCurrentQuestion(session) {
   const roundIndex = gs.round - 1;
   const qIndex = gs.questionNum - 1;
   return shuffledRounds[roundIndex][qIndex];
+}
+
+function showRoundIntro(session) {
+  clearTimer();
+  if (!session.gameState) return;
+  const gs = session.gameState;
+
+  gs.phase = 'roundIntro';
+  gs.roundName = questionsData.rounds[gs.round - 1].name;
+  gs.question = null;
+  gs.choices = null;
+  gs.timer = null;
+
+  session.broadcastState();
+
+  phaseTimer = setTimeout(() => {
+    phaseTimer = null;
+    startQuestion(session);
+  }, ROUND_INTRO_TIME * 1000);
 }
 
 function startQuestion(session) {
@@ -159,7 +179,7 @@ function nextRound(session) {
 
   gs.questionNum = 1;
   gs.totalQuestions = shuffledRounds[gs.round - 1].length;
-  startQuestion(session);
+  showRoundIntro(session);
 }
 
 function gameOver(session) {
@@ -285,9 +305,8 @@ module.exports = {
       }
 
       gs.totalPlayers = players.length;
-      gs.roundName = questionsData.rounds[0].name;
 
-      startQuestion(session);
+      showRoundIntro(session);
       return;
     }
 
