@@ -274,18 +274,16 @@ export default function TriviaTV({ gameState: gs, players }) {
     answersProcessedRef.current = new Set();
   }, [gs.round, gs.questionNum]);
 
-  // Play each player's sound as they answer — runs regardless of phase so the
-  // last answer is heard even when the server transitions to preReveal in the
-  // same broadcast
+  // Play each player's sound as they answer — only during question phase
   useEffect(() => {
-    if (!gs.recentAnswers) return;
+    if (!gs.recentAnswers || gs.phase !== 'question') return;
     for (const entry of gs.recentAnswers) {
       if (!answersProcessedRef.current.has(entry.playerId)) {
         answersProcessedRef.current.add(entry.playerId);
         if (entry.noiseId) playSoundById(entry.noiseId);
       }
     }
-  }, [gs.recentAnswers]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [gs.recentAnswers, gs.phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Lobby music — looping while on character select screen
   useEffect(() => {
