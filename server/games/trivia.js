@@ -1,7 +1,6 @@
 const questionsData = require('./questions.json');
 
 const QUESTION_TIME = 60;
-const PRE_REVEAL_TIME = 5;
 const MIN_PLAYERS = 1;
 
 // Private state — never broadcast
@@ -71,20 +70,8 @@ function endQuestion(session, early) {
   clearTimer();
   if (!session.gameState) return;
 
-  const gs = session.gameState;
-  gs.phase = 'preReveal';
-  gs.earlyEnd = early;
-  gs.timer = {
-    endsAt: Date.now() + PRE_REVEAL_TIME * 1000,
-    duration: PRE_REVEAL_TIME,
-  };
-
-  session.broadcastState();
-
-  phaseTimer = setTimeout(() => {
-    phaseTimer = null;
-    showReveal(session);
-  }, PRE_REVEAL_TIME * 1000);
+  session.gameState.earlyEnd = early;
+  showReveal(session);
 }
 
 function showReveal(session) {
@@ -122,7 +109,6 @@ function showReveal(session) {
   gs.correctIndex = q.answer;
   gs.playerResults = playerResults;
   gs.choiceCounts = choiceCounts;
-  gs.recentAnswers = [];
   gs.timer = null;
 
   session.broadcastState();

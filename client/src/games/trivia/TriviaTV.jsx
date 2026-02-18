@@ -127,22 +127,6 @@ function QuestionPhase({ gs, showAnswers }) {
   );
 }
 
-function PreRevealPhase({ gs }) {
-  return (
-    <div
-      className="h-screen flex flex-col p-6 gap-4 bg-cover bg-center"
-      style={{ backgroundImage: 'url(/tv/background.jpg)' }}
-    >
-      <div className="flex items-center text-white/70 text-lg bg-black/40 rounded-xl px-4 py-2">
-        <span>{gs.roundName} · Q{gs.questionNum}/{gs.totalQuestions}</span>
-      </div>
-      <div className="text-5xl font-bold text-white text-center leading-snug px-4 py-2 bg-black/40 rounded-xl">
-        {gs.question}
-      </div>
-      <AnswerGrid choices={gs.choices} highlightIndex={gs.correctIndex} dimOthers={true} />
-    </div>
-  );
-}
 
 function RevealPhase({ gs, players }) {
   const counts = gs.choiceCounts || [0, 0, 0, 0];
@@ -293,10 +277,10 @@ export default function TriviaTV({ gameState: gs, players }) {
         countdownRef.current = cdAudio;
         setShowAnswers(true);
       }, 3000);
-    } else if (gs.phase === 'preReveal') {
+    } else if (gs.phase === 'reveal') {
       if (gs.earlyEnd) {
+        // Stop countdown, wait 1s for last player's sound then play gong
         stopAll();
-        // Wait 1s so the last player's sound finishes before the gong
         gongTimerRef.current = setTimeout(() => {
           gongTimerRef.current = null;
           const audio = new Audio('/tv/gong.mp3');
@@ -328,10 +312,6 @@ export default function TriviaTV({ gameState: gs, players }) {
 
   if (gs.phase === 'question') {
     return <QuestionPhase gs={gs} showAnswers={showAnswers} />;
-  }
-
-  if (gs.phase === 'preReveal') {
-    return <PreRevealPhase gs={gs} />;
   }
 
   if (gs.phase === 'reveal') {

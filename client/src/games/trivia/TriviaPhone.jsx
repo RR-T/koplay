@@ -229,14 +229,6 @@ export default function TriviaPhone({ gameState: gs, myId, isHost, players, emit
     return <QuestionPhase key={questionKey} gs={gs} emit={emit} />;
   }
 
-  if (gs.phase === 'preReveal') {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-3 p-6">
-        <p className="text-xl font-bold animate-pulse">{gs.earlyEnd ? 'All answered!' : 'Time Up!'}</p>
-      </div>
-    );
-  }
-
   if (gs.phase === 'reveal') {
     const myPlayer = players.find((p) => p.id === myId);
     const me = gs.playerResults?.find((r) => myPlayer && r.name === myPlayer.name);
