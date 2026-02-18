@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import Rankings from '../../shared/components/Rankings';
 import ConfettiCanvas from '../../shared/components/ConfettiCanvas';
 import AVATARS from '../../shared/avatars';
 import PixelAvatar from '../../shared/components/PixelAvatar';
@@ -435,15 +434,6 @@ export default function TriviaTV({ gameState: gs, players }) {
         {!isLastRound && (
           <div className="text-white/60 text-2xl">Next round starting soon...</div>
         )}
-      </div>
-    );
-  }
-
-  if (gs.phase === 'gameover') {
-    return (
-      <div className="relative flex flex-col items-center gap-8 w-full px-8">
-        <div className="text-6xl font-bold">Game Over!</div>
-        <Rankings finalRanking={gs.finalRanking} />
       </div>
     );
   }

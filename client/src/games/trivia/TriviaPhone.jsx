@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import Rankings from '../../shared/components/Rankings';
 import PlayAgainButton from '../../shared/components/PlayAgainButton';
-import ConfettiCanvas from '../../shared/components/ConfettiCanvas';
 import AVATARS from '../../shared/avatars';
 import SOUNDS from '../../shared/sounds';
 import PixelAvatar from '../../shared/components/PixelAvatar';
@@ -354,27 +352,16 @@ export default function TriviaPhone({ gameState: gs, myId, isHost, players, emit
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 p-6">
         <div className="text-lg font-bold">{isLastRound ? 'Final Scores!' : `End of ${gs.roundName} Round`}</div>
         <p className="text-muted-light">Your score: {gs.scores?.[myId] || 0}</p>
-        {isHost && (
+        {isHost && !isLastRound && (
           <button
             onClick={() => emit('game:action', { type: 'advance' })}
             className="mt-4 w-full max-w-xs py-4 bg-accent hover:bg-accent-hover text-white text-xl font-bold rounded-xl"
           >
-            {isLastRound ? 'Finish' : 'Next Round'}
+            Next Round
           </button>
         )}
+        {isHost && isLastRound && <PlayAgainButton />}
         {!isHost && <p className="text-muted text-sm">Waiting for host...</p>}
-      </div>
-    );
-  }
-
-  if (gs.phase === 'gameover') {
-    const isWinner = gs.finalRanking.length > 0 && gs.finalRanking[0].id === myId;
-    return (
-      <div className="relative flex flex-col items-center gap-4">
-        {isWinner && <ConfettiCanvas count={60} />}
-        <div className="text-2xl font-bold">{isWinner ? 'You Won!' : 'Game Over!'}</div>
-        <Rankings finalRanking={gs.finalRanking} />
-        {isHost && <PlayAgainButton />}
       </div>
     );
   }

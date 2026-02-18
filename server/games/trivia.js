@@ -448,7 +448,9 @@ module.exports = {
     }
 
     if (action.type === 'playAgain') {
-      if (session.gameState.phase !== 'gameover') return;
+      const phase = session.gameState.phase;
+      const isLastRoundEnd = phase === 'roundEnd' && session.gameState.round === session.gameState.totalRounds;
+      if (phase !== 'gameover' && !isLastRoundEnd) return;
       if (playerId !== session.hostId) return;
 
       this.init(session);
