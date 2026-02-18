@@ -87,22 +87,6 @@ function CharacterSelectPhase({ gs, players }) {
 }
 
 function QuestionPhase({ gs }) {
-  const processedRef = useRef(new Set());
-
-  useEffect(() => {
-    processedRef.current = new Set();
-  }, [gs.round, gs.questionNum]);
-
-  useEffect(() => {
-    if (!gs.recentAnswers) return;
-    for (const entry of gs.recentAnswers) {
-      if (!processedRef.current.has(entry.playerId)) {
-        processedRef.current.add(entry.playerId);
-        if (entry.noiseId) playSoundById(entry.noiseId);
-      }
-    }
-  }, [gs.recentAnswers]);
-
   return (
     <div
       className="h-screen flex flex-col p-6 gap-4 bg-cover bg-center"
@@ -179,8 +163,14 @@ function RevealPhase({ gs, players }) {
 export default function TriviaTV({ gameState: gs, players }) {
   const countdownRef = useRef(null);
   const gongRef = useRef(null);
+  const gongTimerRef = useRef(null);
+  const answersProcessedRef = useRef(new Set());
 
   function stopAll() {
+    if (gongTimerRef.current) {
+      clearTimeout(gongTimerRef.current);
+      gongTimerRef.current = null;
+    }
     if (countdownRef.current) {
       countdownRef.current.pause();
       countdownRef.current = null;
@@ -191,6 +181,24 @@ export default function TriviaTV({ gameState: gs, players }) {
     }
   }
 
+  // Reset answer tracking on each new question
+  useEffect(() => {
+    answersProcessedRef.current = new Set();
+  }, [gs.round, gs.questionNum]);
+
+  // Play each player's sound as they answer — runs regardless of phase so the
+  // last answer is heard even when the server transitions to preReveal in the
+  // same broadcast
+  useEffect(() => {
+    if (!gs.recentAnswers) return;
+    for (const entry of gs.recentAnswers) {
+      if (!answersProcessedRef.current.has(entry.playerId)) {
+        answersProcessedRef.current.add(entry.playerId);
+        if (entry.noiseId) playSoundById(entry.noiseId);
+      }
+    }
+  }, [gs.recentAnswers]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (gs.phase === 'question') {
       stopAll();
@@ -200,9 +208,13 @@ export default function TriviaTV({ gameState: gs, players }) {
     } else if (gs.phase === 'preReveal') {
       if (gs.earlyEnd) {
         stopAll();
-        const audio = new Audio('/tv/gong.mp3');
-        audio.play().catch(() => {});
-        gongRef.current = audio;
+        // Wait 1s so the last player's sound finishes before the gong
+        gongTimerRef.current = setTimeout(() => {
+          gongTimerRef.current = null;
+          const audio = new Audio('/tv/gong.mp3');
+          audio.play().catch(() => {});
+          gongRef.current = audio;
+        }, 1000);
       }
       // Natural timeout: countdown.mp3 keeps playing through its cooldown section
     } else {
