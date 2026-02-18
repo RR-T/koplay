@@ -61,7 +61,8 @@ Rules:
 - All questions must be factually accurate
 - Vary which index the correct answer appears at`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const response = await fetch(url, {
     method: 'POST',
@@ -74,6 +75,9 @@ Rules:
 
   if (!response.ok) {
     const text = await response.text();
+    if (response.status === 429) {
+      throw new Error('Gemini quota exceeded — check your API plan or try a different model');
+    }
     throw new Error(`Gemini API error ${response.status}: ${text.slice(0, 200)}`);
   }
 
@@ -360,7 +364,7 @@ module.exports = {
         if (!session.gameState) return;
         console.error('Gemini generation failed:', err.message);
         session.gameState.phase = 'topicSelect';
-        session.gameState.error = 'Failed to generate questions — please try again.';
+        session.gameState.error = err.message;
         session.broadcastState();
       });
       return;
