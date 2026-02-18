@@ -324,9 +324,10 @@ module.exports = {
         });
       }
 
-      if (!checkAllAnswered(session)) {
-        session.broadcastState();
-      }
+      // Always broadcast the question-phase update first so the TV plays the
+      // player's sound, then check if everyone has answered and reveal if so.
+      session.broadcastState();
+      checkAllAnswered(session);
       return;
     }
 
