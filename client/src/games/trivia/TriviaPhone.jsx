@@ -234,6 +234,15 @@ export default function TriviaPhone({ gameState: gs, myId, isHost, players, emit
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 p-6">
         <p className="text-3xl font-black">{gs.roundName}</p>
         <p className="text-muted-light">Round {gs.round} of {gs.totalRounds}</p>
+        {isHost && (
+          <button
+            onClick={() => emit('game:action', { type: 'advance' })}
+            className="mt-4 w-full max-w-xs py-4 bg-accent hover:bg-accent-hover text-white text-xl font-bold rounded-xl"
+          >
+            Start Round
+          </button>
+        )}
+        {!isHost && <p className="text-muted text-sm">Waiting for host...</p>}
       </div>
     );
   }

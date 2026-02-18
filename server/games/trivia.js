@@ -1,7 +1,6 @@
 const questionsData = require('./questions.json');
 
 const QUESTION_TIME = 60;
-const ROUND_INTRO_TIME = 4;
 const MIN_PLAYERS = 1;
 
 // Private state — never broadcast
@@ -48,11 +47,6 @@ function showRoundIntro(session) {
   gs.timer = null;
 
   session.broadcastState();
-
-  phaseTimer = setTimeout(() => {
-    phaseTimer = null;
-    startQuestion(session);
-  }, ROUND_INTRO_TIME * 1000);
 }
 
 function startQuestion(session) {
@@ -338,7 +332,9 @@ module.exports = {
 
     if (action.type === 'advance') {
       if (playerId !== session.hostId) return;
-      if (session.gameState.phase === 'reveal') {
+      if (session.gameState.phase === 'roundIntro') {
+        startQuestion(session);
+      } else if (session.gameState.phase === 'reveal') {
         nextQuestion(session);
       } else if (session.gameState.phase === 'roundEnd') {
         nextRound(session);
