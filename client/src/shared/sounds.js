@@ -2,7 +2,7 @@ const SOUNDS = [
   { id: 'sound_00', name: 'Boing Hit' },
   { id: 'sound_01', name: 'Sneeze' },
   { id: 'sound_02', name: 'Clown Nose' },
-  { id: 'sound_03', name: 'Pain Scream' },
+  { id: 'sound_03', name: 'Monkey' },
   { id: 'sound_04', name: 'Dazzle Birds' },
   { id: 'sound_05', name: 'Failure Piano' },
   { id: 'sound_06', name: 'Fart' },

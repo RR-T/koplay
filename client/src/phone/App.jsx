@@ -48,8 +48,8 @@ export default function App() {
     );
   }
 
-  const amHost = myId === sessionState.hostId;
   const amPlayer = sessionState.players.some((p) => p.id === myId);
+  const amHost = sessionState.players.some((p) => p.id === myId && p.isHost);
 
   if (sessionState.state === 'waiting') {
     if (joined) return <WaitingScreen />;
