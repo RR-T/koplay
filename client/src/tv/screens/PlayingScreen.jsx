@@ -6,6 +6,15 @@ export default function PlayingScreen({ state }) {
   const { currentGame, gameState, players } = state;
   const game = gameRegistry.get(currentGame.id);
 
+  // Trivia manages its own full-screen layout — render it without any wrapper
+  if (currentGame.id === 'trivia') {
+    return game ? (
+      <Suspense fallback={<div className="text-muted-light text-2xl text-center mt-20">Loading...</div>}>
+        <game.TVComponent gameState={gameState} players={players} />
+      </Suspense>
+    ) : <PlayerList players={players} />;
+  }
+
   return (
     <div className="h-screen flex flex-col items-center justify-center p-8 overflow-hidden">
       <h1 className="text-4xl font-bold text-accent mb-6">{currentGame.name}</h1>
