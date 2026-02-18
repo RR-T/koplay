@@ -233,7 +233,9 @@ function RevealPhase({ gs, players }) {
 }
 
 export default function TriviaTV({ gameState: gs, players }) {
-  const [showAnswers, setShowAnswers] = useState(false);
+  // Track which question answers are visible for — auto-false when question changes
+  const [showAnswersKey, setShowAnswersKey] = useState(null);
+  const showAnswers = showAnswersKey === `${gs.round}-${gs.questionNum}`;
   const countdownRef = useRef(null);
   const gongRef = useRef(null);
   const gongTimerRef = useRef(null);
@@ -314,7 +316,7 @@ export default function TriviaTV({ gameState: gs, players }) {
       questionAudioRef.current = audio;
     } else if (gs.phase === 'question') {
       stopAll();
-      setShowAnswers(false);
+      const questionKey = `${gs.round}-${gs.questionNum}`;
       // Play question.mp3 while the question is displayed before answers appear
       const qAudio = new Audio('/tv/question.mp3');
       qAudio.play().catch(() => {});
@@ -329,7 +331,7 @@ export default function TriviaTV({ gameState: gs, players }) {
         const cdAudio = new Audio('/tv/countdown.mp3');
         cdAudio.play().catch(() => {});
         countdownRef.current = cdAudio;
-        setShowAnswers(true);
+        setShowAnswersKey(questionKey);
       }, 3000);
     } else if (gs.phase === 'reveal') {
       if (gs.earlyEnd) {
