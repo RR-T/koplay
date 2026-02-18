@@ -2,8 +2,6 @@ const questionsData = require('./questions.json');
 
 const QUESTION_TIME = 60;
 const PRE_REVEAL_TIME = 5;
-const REVEAL_TIME = 7;
-const ROUND_END_TIME = 8;
 const MIN_PLAYERS = 1;
 
 // Private state — never broadcast
@@ -125,17 +123,9 @@ function showReveal(session) {
   gs.playerResults = playerResults;
   gs.choiceCounts = choiceCounts;
   gs.recentAnswers = [];
-  gs.timer = {
-    endsAt: Date.now() + REVEAL_TIME * 1000,
-    duration: REVEAL_TIME,
-  };
+  gs.timer = null;
 
   session.broadcastState();
-
-  phaseTimer = setTimeout(() => {
-    phaseTimer = null;
-    nextQuestion(session);
-  }, REVEAL_TIME * 1000);
 }
 
 function nextQuestion(session) {
@@ -164,17 +154,9 @@ function showRoundEnd(session) {
   gs.correctIndex = null;
   gs.playerResults = null;
   gs.choiceCounts = null;
-  gs.timer = {
-    endsAt: Date.now() + ROUND_END_TIME * 1000,
-    duration: ROUND_END_TIME,
-  };
+  gs.timer = null;
 
   session.broadcastState();
-
-  phaseTimer = setTimeout(() => {
-    phaseTimer = null;
-    nextRound(session);
-  }, ROUND_END_TIME * 1000);
 }
 
 function nextRound(session) {
