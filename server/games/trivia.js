@@ -69,7 +69,6 @@ Rules:
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { response_mime_type: 'application/json' },
     }),
   });
 
@@ -85,7 +84,9 @@ Rules:
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) throw new Error('No content in Gemini response');
 
-  const parsed = JSON.parse(text);
+  // Strip markdown code fences if present (```json ... ```)
+  const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+  const parsed = JSON.parse(cleaned);
   if (!Array.isArray(parsed.rounds) || parsed.rounds.length < 3) {
     throw new Error('Invalid rounds structure in response');
   }
