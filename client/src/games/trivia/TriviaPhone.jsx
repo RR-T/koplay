@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Rankings from '../../shared/components/Rankings';
 import PlayAgainButton from '../../shared/components/PlayAgainButton';
 import ConfettiCanvas from '../../shared/components/ConfettiCanvas';
@@ -163,11 +163,25 @@ function CharacterSelectPhase({ gs, myId, isHost, players, emit }) {
 function QuestionPhase({ gs, emit }) {
   const [answered, setAnswered] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setReady(true), 3000);
+    return () => clearTimeout(t);
+  }, []);
 
   function handleAnswer(index) {
     emit('game:action', { type: 'answer', index });
     setSelectedIndex(index);
     setAnswered(true);
+  }
+
+  if (!ready) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <p className="text-2xl font-bold animate-pulse">Get Ready...</p>
+      </div>
+    );
   }
 
   if (answered) {
