@@ -349,6 +349,16 @@ module.exports = {
       return;
     }
 
+    if (action.type === 'advance') {
+      if (playerId !== session.hostId) return;
+      if (session.gameState.phase === 'reveal') {
+        nextQuestion(session);
+      } else if (session.gameState.phase === 'roundEnd') {
+        nextRound(session);
+      }
+      return;
+    }
+
     if (action.type === 'playAgain') {
       if (session.gameState.phase !== 'gameover') return;
       if (playerId !== session.hostId) return;

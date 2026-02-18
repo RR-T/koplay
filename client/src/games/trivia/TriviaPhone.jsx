@@ -251,6 +251,14 @@ export default function TriviaPhone({ gameState: gs, myId, isHost, players, emit
           </p>
         )}
         <p className="text-muted-light">Your score: {gs.scores?.[myId] || 0}</p>
+        {isHost && (
+          <button
+            onClick={() => emit('game:action', { type: 'advance' })}
+            className="mt-4 w-full max-w-xs py-4 bg-accent hover:bg-accent-hover text-white text-xl font-bold rounded-xl"
+          >
+            Next Question
+          </button>
+        )}
       </div>
     );
   }
@@ -260,7 +268,15 @@ export default function TriviaPhone({ gameState: gs, myId, isHost, players, emit
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 p-6">
         <div className="text-lg font-bold">End of {gs.roundName} Round</div>
         <p className="text-muted-light">Your score: {gs.scores?.[myId] || 0}</p>
-        <p className="text-muted text-sm">Next round starting soon...</p>
+        {isHost && (
+          <button
+            onClick={() => emit('game:action', { type: 'advance' })}
+            className="mt-4 w-full max-w-xs py-4 bg-accent hover:bg-accent-hover text-white text-xl font-bold rounded-xl"
+          >
+            Next Round
+          </button>
+        )}
+        {!isHost && <p className="text-muted text-sm">Waiting for host...</p>}
       </div>
     );
   }
