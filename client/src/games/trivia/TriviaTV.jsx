@@ -133,28 +133,42 @@ function RevealPhase({ gs, players }) {
       <div className="text-2xl font-bold text-white text-center bg-black/40 rounded-xl px-4 py-2">
         {gs.question}
       </div>
-      <div className="flex-1 flex items-end justify-center gap-8 pb-8">
+
+      {/* Bars — all anchored to the same baseline, height driven by vote count */}
+      <div className="flex-1 flex items-end gap-6 px-8">
         {gs.choices.map((choice, i) => {
           const count = counts[i];
-          const heightPct = (count / maxCount) * 100;
           const isCorrect = i === gs.correctIndex;
           return (
-            <div key={i} className="flex flex-col items-center gap-2 flex-1 max-w-[200px]">
+            <div key={i} className="flex-1 flex flex-col items-center gap-1">
               <span className={`text-2xl font-bold ${isCorrect ? 'text-white' : 'text-white/60'}`}>
-                {count} {isCorrect && '✓'}
+                {count}{isCorrect ? ' ✓' : ''}
               </span>
               <div
                 className={`w-full rounded-t-xl transition-all duration-700 ${CHOICE_BAR[i]} ${isCorrect ? '' : 'opacity-60'}`}
-                style={{ height: `${Math.max(heightPct, 4)}%` }}
+                style={{ height: `${(count / maxCount) * 50}vh` }}
               />
-              <div className={`${CHOICE_BG[i]} w-full rounded-b-xl px-2 py-3 text-center ${isCorrect ? '' : 'opacity-60'}`}>
-                <span className="text-white font-bold text-sm block">{CHOICE_LABELS[i]}</span>
-                <span className="text-white/80 text-xs">{choice}</span>
-              </div>
             </div>
           );
         })}
       </div>
+
+      {/* Labels — separate fixed row below the bars */}
+      <div className="flex gap-6 px-8">
+        {gs.choices.map((choice, i) => {
+          const isCorrect = i === gs.correctIndex;
+          return (
+            <div
+              key={i}
+              className={`flex-1 rounded-xl px-3 py-3 text-center ${CHOICE_BG[i]} ${isCorrect ? '' : 'opacity-60'}`}
+            >
+              <span className="text-white font-bold text-lg block">{CHOICE_LABELS[i]}</span>
+              <span className="text-white/90 text-sm leading-snug">{choice}</span>
+            </div>
+          );
+        })}
+      </div>
+
       <Scoreboard scores={gs.scores} players={players} />
     </div>
   );
