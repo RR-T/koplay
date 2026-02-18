@@ -87,6 +87,22 @@ function CharacterSelectPhase({ gs, players }) {
 }
 
 function QuestionPhase({ gs }) {
+  const processedRef = useRef(new Set());
+
+  useEffect(() => {
+    processedRef.current = new Set();
+  }, [gs.round, gs.questionNum]);
+
+  useEffect(() => {
+    if (!gs.recentAnswers) return;
+    for (const entry of gs.recentAnswers) {
+      if (!processedRef.current.has(entry.playerId)) {
+        processedRef.current.add(entry.playerId);
+        if (entry.noiseId) playSoundById(entry.noiseId);
+      }
+    }
+  }, [gs.recentAnswers]);
+
   return (
     <div
       className="h-screen flex flex-col p-6 gap-4 bg-cover bg-center"
