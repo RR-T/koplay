@@ -5,6 +5,7 @@ import Scoreboard from '../../shared/components/Scoreboard';
 import AVATARS from '../../shared/avatars';
 import PixelAvatar from '../../shared/components/PixelAvatar';
 import QRCodeCanvas from '../../shared/components/QRCodeCanvas';
+import { playSoundById } from '../../shared/sounds';
 
 const CHOICE_LABELS = ['A', 'B', 'C', 'D'];
 const CHOICE_BG = ['bg-red-600', 'bg-blue-600', 'bg-amber-500', 'bg-teal-600'];
@@ -38,6 +39,16 @@ function AnswerGrid({ choices, highlightIndex = null, dimOthers = false }) {
 
 function CharacterSelectPhase({ gs, players }) {
   const phoneUrl = window.location.origin + '/phone';
+  const soundedRef = useRef(new Set());
+
+  useEffect(() => {
+    for (const player of players) {
+      if (player.noiseId && !soundedRef.current.has(player.id)) {
+        soundedRef.current.add(player.id);
+        playSoundById(player.noiseId);
+      }
+    }
+  }, [players]);
 
   return (
     <div
