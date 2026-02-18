@@ -271,21 +271,26 @@ export default function TriviaTV({ gameState: gs, players }) {
     }
   }
 
-  // Reset answer tracking on each new question
+  // Reset answer tracking only when a new question begins (not on roundEnd where
+  // questionNum also increments — that would let stale recentAnswers replay sounds)
   useEffect(() => {
-    answersProcessedRef.current = new Set();
-  }, [gs.round, gs.questionNum]);
+    if (gs.phase === 'question') {
+      answersProcessedRef.current = new Set();
+    }
+  }, [gs.phase, gs.round, gs.questionNum]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Play each player's sound as they answer — only during question phase
+  // Play each player's sound whenever recentAnswers gains a new entry.
+  // No phase gate — the Set prevents replays, and the reset above ensures
+  // the last player's sound plays even when reveal arrives in the same batch.
   useEffect(() => {
-    if (!gs.recentAnswers || gs.phase !== 'question') return;
+    if (!gs.recentAnswers) return;
     for (const entry of gs.recentAnswers) {
       if (!answersProcessedRef.current.has(entry.playerId)) {
         answersProcessedRef.current.add(entry.playerId);
         if (entry.noiseId) playSoundById(entry.noiseId);
       }
     }
-  }, [gs.recentAnswers, gs.phase]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [gs.recentAnswers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Lobby music — looping while on character select screen
   useEffect(() => {
