@@ -75,7 +75,7 @@ function CharacterSelectPhase({ gs, myId, isHost, players, emit }) {
         <div className="w-full max-w-sm">
           <h2 className="text-2xl font-bold text-center mb-2">Choose Avatar</h2>
           <p className="text-muted-light text-center text-sm mb-6">Pick your character</p>
-          <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-5 gap-2 mb-6">
             {AVATARS.map((avatar) => {
               const taken = takenAvatars.includes(avatar.id);
               const selected = avatarId === avatar.id;
@@ -116,7 +116,7 @@ function CharacterSelectPhase({ gs, myId, isHost, players, emit }) {
         <div className="w-full max-w-sm">
           <h2 className="text-2xl font-bold text-center mb-2">Choose Sound</h2>
           <p className="text-muted-light text-center text-sm mb-6">Tap to preview, pick your noise</p>
-          <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-5 gap-2 mb-6">
             {SOUNDS.map((sound) => {
               const taken = takenNoises.includes(sound.id);
               const selected = noiseId === sound.id;
