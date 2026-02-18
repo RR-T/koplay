@@ -55,6 +55,35 @@ function AnsweredRow({ entries }) {
   );
 }
 
+function TopicSelectPhase({ gs }) {
+  return (
+    <div
+      className="h-screen flex flex-col items-center justify-center gap-6 bg-cover bg-center"
+      style={{ backgroundImage: 'url(/tv/background.jpg)' }}
+    >
+      <div className="bg-black/60 rounded-3xl px-20 py-14 flex flex-col items-center gap-6">
+        <p className="text-8xl font-black text-white">Trivia!</p>
+        <p className="text-white/60 text-3xl">Waiting for host to choose a topic...</p>
+        {gs.error && <p className="text-red-400 text-2xl">{gs.error}</p>}
+      </div>
+    </div>
+  );
+}
+
+function GeneratingPhase({ gs }) {
+  return (
+    <div
+      className="h-screen flex flex-col items-center justify-center gap-6 bg-cover bg-center"
+      style={{ backgroundImage: 'url(/tv/background.jpg)' }}
+    >
+      <div className="bg-black/60 rounded-3xl px-20 py-14 flex flex-col items-center gap-6">
+        <p className="text-5xl font-black text-white animate-pulse">Generating questions...</p>
+        <p className="text-white/60 text-2xl">Topic: {gs.topic}</p>
+      </div>
+    </div>
+  );
+}
+
 const PODIUM_COLOURS = ['text-yellow-400', 'text-slate-300', 'text-amber-600'];
 
 function RoundLeaderboard({ scores, players }) {
@@ -365,6 +394,14 @@ export default function TriviaTV({ gameState: gs, players }) {
 
   if (gs.phase === 'error') {
     return <p className="text-error text-center text-2xl">{gs.message}</p>;
+  }
+
+  if (gs.phase === 'topicSelect') {
+    return <TopicSelectPhase gs={gs} />;
+  }
+
+  if (gs.phase === 'generating') {
+    return <GeneratingPhase gs={gs} />;
   }
 
   if (gs.phase === 'characterSelect') {

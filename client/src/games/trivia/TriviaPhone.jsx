@@ -15,6 +15,61 @@ const CHOICE_BG = [
 ];
 const CHOICE_BG_PLAIN = ['bg-red-600', 'bg-blue-600', 'bg-amber-500', 'bg-teal-600'];
 
+function TopicSelectPhase({ gs, isHost, emit }) {
+  const [topic, setTopic] = useState('');
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!topic.trim()) return;
+    emit('game:action', { type: 'setTopic', topic: topic.trim() });
+  }
+
+  if (!isHost) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-6">
+        <p className="text-2xl font-bold">Trivia!</p>
+        <p className="text-muted-light text-center">Waiting for host to choose a topic...</p>
+        {gs.error && <p className="text-red-400 text-center text-sm">{gs.error}</p>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-6">
+      <h2 className="text-2xl font-bold text-center">Choose a Topic</h2>
+      <p className="text-muted-light text-center text-sm">e.g. The Beatles, Space Exploration, Premier League</p>
+      {gs.error && <p className="text-red-400 text-center text-sm">{gs.error}</p>}
+      <form onSubmit={handleSubmit} className="w-full max-w-xs flex flex-col gap-4">
+        <input
+          type="text"
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          placeholder="Enter a topic..."
+          className="w-full px-4 py-3 rounded-xl bg-surface-light border border-muted/30 text-white placeholder:text-muted text-lg"
+          autoFocus
+        />
+        <button
+          type="submit"
+          disabled={!topic.trim()}
+          className="w-full py-4 bg-accent hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed text-white text-xl font-bold rounded-xl"
+        >
+          Generate Questions
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function GeneratingPhase({ gs }) {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-6">
+      <p className="text-xl font-bold animate-pulse">Generating questions...</p>
+      <p className="text-muted-light text-center">Topic: {gs.topic}</p>
+      <p className="text-muted text-sm text-center">This may take a few seconds</p>
+    </div>
+  );
+}
+
 function CharacterSelectPhase({ gs, myId, isHost, players, emit }) {
   const [step, setStep] = useState('avatar'); // 'avatar' | 'noise'
   const [avatarId, setAvatarId] = useState(null);
@@ -233,6 +288,14 @@ export default function TriviaPhone({ gameState: gs, myId, isHost, players, emit
 
   if (gs.phase === 'error') {
     return <p className="text-error text-center">{gs.message}</p>;
+  }
+
+  if (gs.phase === 'topicSelect') {
+    return <TopicSelectPhase gs={gs} isHost={isHost} emit={emit} />;
+  }
+
+  if (gs.phase === 'generating') {
+    return <GeneratingPhase gs={gs} />;
   }
 
   if (gs.phase === 'characterSelect') {

@@ -1,5 +1,3 @@
-const questionsData = require('./questions.json');
-
 const QUESTION_TIME = 60;
 const MIN_PLAYERS = 1;
 
@@ -7,6 +5,7 @@ const MIN_PLAYERS = 1;
 let roundAnswers = null; // Map<playerId, choiceIndex>
 let phaseTimer = null;
 let shuffledRounds = null; // questions shuffled per round
+let currentRounds = null;  // [{name, questions}] from Gemini
 
 function clearTimer() {
   if (phaseTimer) {
@@ -35,13 +34,73 @@ function getCurrentQuestion(session) {
   return shuffledRounds[roundIndex][qIndex];
 }
 
+async function generateQuestions(topic) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY is not set in environment');
+
+  const prompt = `Generate a trivia quiz about "${topic}" with 3 difficulty rounds.
+Return ONLY a valid JSON object with no markdown formatting, code blocks, or explanation.
+Use this exact structure:
+{
+  "rounds": [
+    {
+      "name": "Easy",
+      "questions": [
+        {"question": "...", "choices": ["A", "B", "C", "D"], "answer": 0}
+      ]
+    },
+    {"name": "Medium", "questions": [...]},
+    {"name": "Hard", "questions": [...]}
+  ]
+}
+Rules:
+- Exactly 10 questions per round (30 total)
+- Exactly 4 choices per question
+- "answer" is the 0-based index of the correct choice (0, 1, 2, or 3)
+- Easy questions should be general knowledge, Medium moderately challenging, Hard quite difficult
+- All questions must be factually accurate
+- Vary which index the correct answer appears at`;
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { response_mime_type: 'application/json' },
+    }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Gemini API error ${response.status}: ${text.slice(0, 200)}`);
+  }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('No content in Gemini response');
+
+  const parsed = JSON.parse(text);
+  if (!Array.isArray(parsed.rounds) || parsed.rounds.length < 3) {
+    throw new Error('Invalid rounds structure in response');
+  }
+  for (const round of parsed.rounds) {
+    if (!Array.isArray(round.questions) || round.questions.length < 5) {
+      throw new Error('Invalid questions structure in response');
+    }
+  }
+
+  return parsed.rounds;
+}
+
 function showRoundIntro(session) {
   clearTimer();
   if (!session.gameState) return;
   const gs = session.gameState;
 
   gs.phase = 'roundIntro';
-  gs.roundName = questionsData.rounds[gs.round - 1].name;
+  gs.roundName = currentRounds[gs.round - 1].name;
   gs.question = null;
   gs.choices = null;
   gs.timer = null;
@@ -57,7 +116,7 @@ function startQuestion(session) {
   const gs = session.gameState;
 
   gs.phase = 'question';
-  gs.roundName = questionsData.rounds[gs.round - 1].name;
+  gs.roundName = currentRounds[gs.round - 1].name;
   gs.question = q.question;
   gs.choices = q.choices;
   gs.answeredCount = 0;
@@ -223,20 +282,21 @@ module.exports = {
       };
     }
 
-    // Shuffle questions within each round
-    shuffledRounds = questionsData.rounds.map((r) => shuffle(r.questions));
-
+    shuffledRounds = null;
+    currentRounds = null;
     roundAnswers = null;
     clearTimer();
 
     session.gameState = {
-      phase: 'characterSelect',
+      phase: 'topicSelect',
+      topic: null,
+      error: null,
       joinLocked: false,
-      round: 1,
-      totalRounds: shuffledRounds.length,
+      round: null,
+      totalRounds: null,
       roundName: null,
-      questionNum: 1,
-      totalQuestions: shuffledRounds[0].length,
+      questionNum: null,
+      totalQuestions: null,
       question: null,
       choices: null,
       answeredCount: 0,
@@ -257,6 +317,55 @@ module.exports = {
   handleAction(session, playerId, action) {
     if (!session.gameState || session.gameState.phase === 'error') return;
 
+    if (action.type === 'setTopic') {
+      if (session.gameState.phase !== 'topicSelect') return;
+      if (playerId !== session.hostId) return;
+
+      const topic = (action.topic || '').trim();
+      if (!topic) return;
+
+      session.gameState.phase = 'generating';
+      session.gameState.topic = topic;
+      session.gameState.error = null;
+      session.broadcastState();
+
+      generateQuestions(topic).then((rounds) => {
+        if (!session.gameState) return;
+        currentRounds = rounds;
+        shuffledRounds = rounds.map((r) => shuffle(r.questions));
+
+        Object.assign(session.gameState, {
+          phase: 'characterSelect',
+          joinLocked: false,
+          round: 1,
+          totalRounds: rounds.length,
+          roundName: null,
+          questionNum: 1,
+          totalQuestions: shuffledRounds[0].length,
+          question: null,
+          choices: null,
+          answeredCount: 0,
+          totalPlayers: activePlayers(session).length,
+          correctIndex: null,
+          playerResults: null,
+          choiceCounts: null,
+          scores: null,
+          recentAnswers: [],
+          earlyEnd: false,
+          timer: null,
+          finalRanking: null,
+        });
+        session.broadcastState();
+      }).catch((err) => {
+        if (!session.gameState) return;
+        console.error('Gemini generation failed:', err.message);
+        session.gameState.phase = 'topicSelect';
+        session.gameState.error = 'Failed to generate questions — please try again.';
+        session.broadcastState();
+      });
+      return;
+    }
+
     if (action.type === 'selectCharacter') {
       if (session.gameState.phase !== 'characterSelect') return;
 
@@ -266,12 +375,8 @@ module.exports = {
       // Check uniqueness against other players
       for (const [id, player] of session.players) {
         if (id === playerId) continue;
-        if (player.avatarId === avatarId) {
-          return; // silently ignore — client UI should prevent this
-        }
-        if (player.noiseId === noiseId) {
-          return;
-        }
+        if (player.avatarId === avatarId) return;
+        if (player.noiseId === noiseId) return;
       }
 
       const player = session.players.get(playerId);
@@ -291,7 +396,6 @@ module.exports = {
       const gs = session.gameState;
       gs.joinLocked = true;
 
-      // Initialise scores for current players
       const players = activePlayers(session);
       gs.scores = {};
       for (const id of players) {
@@ -324,8 +428,8 @@ module.exports = {
         });
       }
 
-      // Always broadcast the question-phase update first so the TV plays the
-      // player's sound, then check if everyone has answered and reveal if so.
+      // Always broadcast question-phase update first so TV plays the sound,
+      // then check if all answered and transition to reveal if so.
       session.broadcastState();
       checkAllAnswered(session);
       return;
@@ -356,8 +460,11 @@ module.exports = {
   onPlayerLeave(session, playerId) {
     if (!session.gameState || session.gameState.phase === 'error') return;
 
-    // During character selection, just update the count and carry on
-    if (session.gameState.phase === 'characterSelect') {
+    if (
+      session.gameState.phase === 'topicSelect' ||
+      session.gameState.phase === 'generating' ||
+      session.gameState.phase === 'characterSelect'
+    ) {
       session.gameState.totalPlayers = activePlayers(session).filter((id) => id !== playerId).length;
       return;
     }
