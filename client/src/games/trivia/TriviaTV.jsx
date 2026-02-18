@@ -203,7 +203,7 @@ function RevealPhase({ gs, players }) {
                 {count}{isCorrect ? ' ✓' : ''}
               </span>
               <div
-                className={`w-full rounded-t-xl transition-all duration-700 ${CHOICE_BAR[i]} ${isCorrect ? '' : 'opacity-60'}`}
+                className={`w-full rounded-t-xl transition-all duration-700 ${CHOICE_BAR[i]} ${isCorrect ? '' : 'opacity-20'}`}
                 style={{ height: `${(count / maxCount) * 50}vh` }}
               />
             </div>
@@ -218,7 +218,7 @@ function RevealPhase({ gs, players }) {
           return (
             <div
               key={i}
-              className={`flex-1 rounded-xl px-3 py-3 text-center ${CHOICE_BG[i]} ${isCorrect ? '' : 'opacity-60'}`}
+              className={`flex-1 rounded-xl px-3 py-3 text-center ${CHOICE_BG[i]} ${isCorrect ? 'ring-4 ring-white' : 'opacity-25'}`}
             >
               <span className="text-white font-bold text-lg block">{CHOICE_LABELS[i]}</span>
               <span className="text-white/90 text-sm leading-snug">{choice}</span>
