@@ -84,7 +84,7 @@ function CharacterSelectPhase({ gs, myId, isHost, players, emit }) {
                   key={avatar.id}
                   onClick={() => handleAvatarSelect(avatar.id)}
                   disabled={taken}
-                  className={`flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-colors ${
+                  className={`flex items-center justify-center p-1.5 rounded-lg border-2 transition-colors ${
                     taken
                       ? 'opacity-25 border-muted/20 cursor-not-allowed'
                       : selected
@@ -92,8 +92,7 @@ function CharacterSelectPhase({ gs, myId, isHost, players, emit }) {
                         : 'border-muted/20 hover:border-muted/50'
                   }`}
                 >
-                  <PixelAvatar avatar={avatar} size={40} />
-                  <span className="text-xs text-muted-light">{avatar.name}</span>
+                  <PixelAvatar avatar={avatar} size={48} />
                 </button>
               );
             })}
@@ -125,7 +124,7 @@ function CharacterSelectPhase({ gs, myId, isHost, players, emit }) {
                   key={sound.id}
                   onClick={() => handleNoiseSelect(sound)}
                   disabled={taken}
-                  className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-colors ${
+                  className={`flex items-center justify-center p-2 rounded-lg border-2 transition-colors ${
                     taken
                       ? 'opacity-25 border-muted/20 cursor-not-allowed'
                       : selected
@@ -133,8 +132,7 @@ function CharacterSelectPhase({ gs, myId, isHost, players, emit }) {
                         : 'border-muted/20 hover:border-muted/50'
                   }`}
                 >
-                  <span className="text-2xl">🔊</span>
-                  <span className="text-xs text-muted-light">{sound.name}</span>
+                  <span className="text-4xl">🔊</span>
                 </button>
               );
             })}

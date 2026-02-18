@@ -28,11 +28,30 @@ function AnswerGrid({ choices, highlightIndex = null, dimOthers = false }) {
               isHighlighted ? 'ring-4 ring-white scale-105' : ''
             } ${isDimmed ? 'opacity-30' : ''}`}
           >
-            <span className="text-3xl font-black text-white/80 mb-2">{CHOICE_LABELS[i]}</span>
-            <span className="text-2xl font-bold text-white text-center leading-snug">{choice}</span>
+            <span className="text-2xl font-black text-white/80 mb-1">{CHOICE_LABELS[i]}</span>
+            <span className="text-lg font-bold text-white text-center leading-snug">{choice}</span>
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function AnsweredRow({ entries }) {
+  return (
+    <div className="flex items-center gap-4 bg-black/40 rounded-xl px-6 py-3">
+      <span className="text-white/50 text-lg font-semibold shrink-0">Answered</span>
+      <div className="flex gap-3 flex-wrap">
+        {entries.map((entry, i) => {
+          const avatar = getAvatar(entry.avatarId);
+          if (!avatar) return null;
+          return (
+            <div key={i} className={entry.correct === false ? 'opacity-40' : ''}>
+              <PixelAvatar avatar={avatar} size={40} />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -92,14 +111,14 @@ function QuestionPhase({ gs }) {
       className="h-screen flex flex-col p-6 gap-4 bg-cover bg-center"
       style={{ backgroundImage: 'url(/tv/background.jpg)' }}
     >
-      <div className="flex justify-between items-center text-white/70 text-lg bg-black/40 rounded-xl px-4 py-2">
+      <div className="flex items-center text-white/70 text-lg bg-black/40 rounded-xl px-4 py-2">
         <span>{gs.roundName} · Q{gs.questionNum}/{gs.totalQuestions}</span>
-        <span>{gs.answeredCount}/{gs.totalPlayers} answered</span>
       </div>
-      <div className="text-3xl font-bold text-white text-center leading-snug px-4 py-2 bg-black/40 rounded-xl">
+      <div className="text-5xl font-bold text-white text-center leading-snug px-4 py-3 bg-black/40 rounded-xl">
         {gs.question}
       </div>
       <AnswerGrid choices={gs.choices} />
+      <AnsweredRow entries={gs.recentAnswers} />
     </div>
   );
 }
@@ -169,7 +188,7 @@ function RevealPhase({ gs, players }) {
         })}
       </div>
 
-      <Scoreboard scores={gs.scores} players={players} />
+      <AnsweredRow entries={gs.playerResults || []} />
     </div>
   );
 }
