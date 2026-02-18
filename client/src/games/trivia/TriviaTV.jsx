@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Rankings from '../../shared/components/Rankings';
 import ConfettiCanvas from '../../shared/components/ConfettiCanvas';
-import Scoreboard from '../../shared/components/Scoreboard';
 import AVATARS from '../../shared/avatars';
 import PixelAvatar from '../../shared/components/PixelAvatar';
 import QRCodeCanvas from '../../shared/components/QRCodeCanvas';
@@ -52,6 +51,42 @@ function AnsweredRow({ entries }) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+const PODIUM_COLOURS = ['text-yellow-400', 'text-slate-300', 'text-amber-600'];
+
+function RoundLeaderboard({ scores, players }) {
+  const entries = players
+    .map((p) => ({ ...p, score: scores?.[p.id] || 0, avatar: getAvatar(p.avatarId) }))
+    .sort((a, b) => b.score - a.score);
+
+  const top = entries.slice(0, 3);
+  const rest = entries.slice(3);
+
+  return (
+    <div className="w-full max-w-2xl flex flex-col gap-4">
+      {top.map((e, i) => (
+        <div key={e.id} className="flex items-center gap-6 bg-black/50 rounded-2xl px-6 py-4">
+          <span className={`text-4xl font-black w-10 text-center ${PODIUM_COLOURS[i]}`}>
+            {i + 1}
+          </span>
+          {e.avatar && <PixelAvatar avatar={e.avatar} size={56} />}
+          <span className="text-3xl font-bold text-white flex-1">{e.name}</span>
+          <span className={`text-4xl font-black ${PODIUM_COLOURS[i]}`}>{e.score}</span>
+        </div>
+      ))}
+      {rest.length > 0 && (
+        <div className="flex items-center justify-center gap-4 mt-2">
+          {rest.map((e) => (
+            <div key={e.id} className="flex flex-col items-center gap-1 opacity-60">
+              {e.avatar && <PixelAvatar avatar={e.avatar} size={40} />}
+              <span className="text-white/80 text-sm font-semibold">{e.score}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -354,7 +389,7 @@ export default function TriviaTV({ gameState: gs, players }) {
         <div className="text-5xl font-black text-white">
           {isLastRound ? 'Final Scores!' : `End of ${gs.roundName} Round`}
         </div>
-        <Scoreboard scores={gs.scores} players={players} />
+        <RoundLeaderboard scores={gs.scores} players={players} />
         {!isLastRound && (
           <div className="text-white/60 text-2xl">Next round starting soon...</div>
         )}
