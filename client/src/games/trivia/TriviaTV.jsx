@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Rankings from '../../shared/components/Rankings';
 import ConfettiCanvas from '../../shared/components/ConfettiCanvas';
 import Scoreboard from '../../shared/components/Scoreboard';
@@ -15,16 +15,16 @@ function getAvatar(avatarId) {
   return AVATARS.find((a) => a.id === avatarId) || null;
 }
 
-function AnswerGrid({ choices, highlightIndex = null, dimOthers = false }) {
+function AnswerGrid({ choices, highlightIndex = null, dimOthers = false, className = 'flex-1' }) {
   return (
-    <div className="grid grid-cols-2 gap-4 w-full flex-1">
+    <div className={`grid grid-cols-2 gap-4 w-full ${className}`}>
       {choices.map((choice, i) => {
         const isHighlighted = highlightIndex === i;
         const isDimmed = dimOthers && highlightIndex !== null && !isHighlighted;
         return (
           <div
             key={i}
-            className={`${CHOICE_BG[i]} flex flex-col items-center justify-center rounded-2xl p-6 transition-all duration-500 ${
+            className={`${CHOICE_BG[i]} flex flex-col items-center justify-center rounded-2xl p-4 transition-all duration-500 ${
               isHighlighted ? 'ring-4 ring-white scale-105' : ''
             } ${isDimmed ? 'opacity-30' : ''}`}
           >
@@ -105,7 +105,7 @@ function CharacterSelectPhase({ gs, players }) {
   );
 }
 
-function QuestionPhase({ gs }) {
+function QuestionPhase({ gs, showAnswers }) {
   return (
     <div
       className="h-screen flex flex-col p-6 gap-4 bg-cover bg-center"
@@ -114,11 +114,15 @@ function QuestionPhase({ gs }) {
       <div className="flex items-center text-white/70 text-lg bg-black/40 rounded-xl px-4 py-2">
         <span>{gs.roundName} · Q{gs.questionNum}/{gs.totalQuestions}</span>
       </div>
-      <div className="text-5xl font-bold text-white text-center leading-snug px-4 py-3 bg-black/40 rounded-xl">
-        {gs.question}
+      <div className="flex-[2] flex items-center justify-center px-6 py-4 bg-black/40 rounded-xl">
+        <p className="text-7xl font-bold text-white text-center leading-tight">{gs.question}</p>
       </div>
-      <AnswerGrid choices={gs.choices} />
-      <AnsweredRow entries={gs.recentAnswers} />
+      {showAnswers && (
+        <>
+          <AnswerGrid choices={gs.choices} />
+          <AnsweredRow entries={gs.recentAnswers} />
+        </>
+      )}
     </div>
   );
 }
@@ -129,10 +133,10 @@ function PreRevealPhase({ gs }) {
       className="h-screen flex flex-col p-6 gap-4 bg-cover bg-center"
       style={{ backgroundImage: 'url(/tv/background.jpg)' }}
     >
-      <div className="flex justify-between items-center text-white/70 text-lg bg-black/40 rounded-xl px-4 py-2">
+      <div className="flex items-center text-white/70 text-lg bg-black/40 rounded-xl px-4 py-2">
         <span>{gs.roundName} · Q{gs.questionNum}/{gs.totalQuestions}</span>
       </div>
-      <div className="text-3xl font-bold text-white text-center leading-snug px-4 py-2 bg-black/40 rounded-xl">
+      <div className="text-5xl font-bold text-white text-center leading-snug px-4 py-2 bg-black/40 rounded-xl">
         {gs.question}
       </div>
       <AnswerGrid choices={gs.choices} highlightIndex={gs.correctIndex} dimOthers={true} />
@@ -194,12 +198,24 @@ function RevealPhase({ gs, players }) {
 }
 
 export default function TriviaTV({ gameState: gs, players }) {
+  const [showAnswers, setShowAnswers] = useState(false);
   const countdownRef = useRef(null);
   const gongRef = useRef(null);
   const gongTimerRef = useRef(null);
+  const questionAudioRef = useRef(null);
+  const lobbyAudioRef = useRef(null);
+  const showAnswersTimerRef = useRef(null);
   const answersProcessedRef = useRef(new Set());
 
   function stopAll() {
+    if (showAnswersTimerRef.current) {
+      clearTimeout(showAnswersTimerRef.current);
+      showAnswersTimerRef.current = null;
+    }
+    if (questionAudioRef.current) {
+      questionAudioRef.current.pause();
+      questionAudioRef.current = null;
+    }
     if (gongTimerRef.current) {
       clearTimeout(gongTimerRef.current);
       gongTimerRef.current = null;
@@ -211,6 +227,10 @@ export default function TriviaTV({ gameState: gs, players }) {
     if (gongRef.current) {
       gongRef.current.pause();
       gongRef.current = null;
+    }
+    if (lobbyAudioRef.current) {
+      lobbyAudioRef.current.pause();
+      lobbyAudioRef.current = null;
     }
   }
 
@@ -232,12 +252,47 @@ export default function TriviaTV({ gameState: gs, players }) {
     }
   }, [gs.recentAnswers]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Lobby music — looping while on character select screen
+  useEffect(() => {
+    if (gs.phase === 'characterSelect') {
+      const audio = new Audio('/tv/lobby.mp3');
+      audio.loop = true;
+      audio.play().catch(() => {});
+      lobbyAudioRef.current = audio;
+    } else {
+      if (lobbyAudioRef.current) {
+        lobbyAudioRef.current.pause();
+        lobbyAudioRef.current = null;
+      }
+    }
+    return () => {
+      if (lobbyAudioRef.current) {
+        lobbyAudioRef.current.pause();
+        lobbyAudioRef.current = null;
+      }
+    };
+  }, [gs.phase]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (gs.phase === 'question') {
       stopAll();
-      const audio = new Audio('/tv/countdown.mp3');
-      audio.play().catch(() => {});
-      countdownRef.current = audio;
+      setShowAnswers(false);
+      // Play question.mp3 while the question is displayed before answers appear
+      const qAudio = new Audio('/tv/question.mp3');
+      qAudio.play().catch(() => {});
+      questionAudioRef.current = qAudio;
+      // After 3s, reveal answers and start the countdown music
+      showAnswersTimerRef.current = setTimeout(() => {
+        showAnswersTimerRef.current = null;
+        if (questionAudioRef.current) {
+          questionAudioRef.current.pause();
+          questionAudioRef.current = null;
+        }
+        const cdAudio = new Audio('/tv/countdown.mp3');
+        cdAudio.play().catch(() => {});
+        countdownRef.current = cdAudio;
+        setShowAnswers(true);
+      }, 3000);
     } else if (gs.phase === 'preReveal') {
       if (gs.earlyEnd) {
         stopAll();
@@ -272,7 +327,7 @@ export default function TriviaTV({ gameState: gs, players }) {
   }
 
   if (gs.phase === 'question') {
-    return <QuestionPhase gs={gs} />;
+    return <QuestionPhase gs={gs} showAnswers={showAnswers} />;
   }
 
   if (gs.phase === 'preReveal') {
