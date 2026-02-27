@@ -3,7 +3,7 @@ import ConfettiCanvas from '../../shared/components/ConfettiCanvas';
 import AVATARS from '../../shared/avatars';
 import PixelAvatar from '../../shared/components/PixelAvatar';
 import QRCodeCanvas from '../../shared/components/QRCodeCanvas';
-import { playSoundById } from '../../shared/sounds';
+import { playSoundById, createMusicElement } from '../../shared/sounds';
 
 const CHOICE_LABELS = ['A', 'B', 'C', 'D'];
 const CHOICE_BG = ['bg-red-600', 'bg-blue-600', 'bg-amber-500', 'bg-teal-600'];
@@ -323,8 +323,7 @@ export default function TriviaTV({ gameState: gs, players }) {
   // Lobby music — looping while on character select screen
   useEffect(() => {
     if (gs.phase === 'characterSelect') {
-      const audio = new Audio('/tv/lobby.mp3');
-      audio.loop = true;
+      const audio = createMusicElement('/tv/lobby.mp3', { loop: true });
       audio.play().catch(() => {});
       lobbyAudioRef.current = audio;
     } else {
@@ -344,14 +343,14 @@ export default function TriviaTV({ gameState: gs, players }) {
   useEffect(() => {
     if (gs.phase === 'roundIntro') {
       stopAll();
-      const audio = new Audio('/tv/round_start.wav');
+      const audio = createMusicElement('/tv/round_start.wav');
       audio.play().catch(() => {});
       questionAudioRef.current = audio;
     } else if (gs.phase === 'question') {
       stopAll();
       const questionKey = `${gs.round}-${gs.questionNum}`;
       // Play question.mp3 while the question is displayed before answers appear
-      const qAudio = new Audio('/tv/question.mp3');
+      const qAudio = createMusicElement('/tv/question.mp3');
       qAudio.play().catch(() => {});
       questionAudioRef.current = qAudio;
       // After 3s, reveal answers and start the countdown music
@@ -361,7 +360,7 @@ export default function TriviaTV({ gameState: gs, players }) {
           questionAudioRef.current.pause();
           questionAudioRef.current = null;
         }
-        const cdAudio = new Audio('/tv/countdown.mp3');
+        const cdAudio = createMusicElement('/tv/countdown.mp3');
         cdAudio.play().catch(() => {});
         countdownRef.current = cdAudio;
         setShowAnswersKey(questionKey);
@@ -372,7 +371,7 @@ export default function TriviaTV({ gameState: gs, players }) {
         stopAll();
         gongTimerRef.current = setTimeout(() => {
           gongTimerRef.current = null;
-          const audio = new Audio('/tv/gong.mp3');
+          const audio = createMusicElement('/tv/gong.mp3');
           audio.play().catch(() => {});
           gongRef.current = audio;
         }, 1000);
