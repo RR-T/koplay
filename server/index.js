@@ -5,6 +5,7 @@ const { Server } = require('socket.io');
 const path = require('path');
 const session = require('./sessionManager');
 const games = require('./games');
+const quizUsers = require('./quizUsers');
 
 const app = express();
 const server = http.createServer(app);
@@ -88,6 +89,11 @@ io.on('connection', (socket) => {
 
       session.selectGame(game);
       broadcastState();
+    });
+
+    socket.on('auth:identify', ({ password } = {}, ack) => {
+      const username = quizUsers.identify(password);
+      if (typeof ack === 'function') ack({ username });
     });
 
     socket.on('game:action', (data) => {

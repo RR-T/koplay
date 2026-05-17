@@ -1,6 +1,9 @@
 const QUESTION_TIME = 60;
 const MIN_PLAYERS = 1;
 
+const quizStore = require('../quizStore');
+const quizUsers = require('../quizUsers');
+
 // Private state — never broadcast
 let roundAnswers = null; // Map<playerId, choiceIndex>
 let phaseTimer = null;
@@ -272,6 +275,36 @@ function checkAllAnswered(session) {
   return false;
 }
 
+function startWithRounds(session, rounds, topic) {
+  currentRounds = rounds;
+  shuffledRounds = rounds.map((r) => shuffle(r.questions));
+
+  Object.assign(session.gameState, {
+    phase: 'characterSelect',
+    topic,
+    error: null,
+    joinLocked: false,
+    round: 1,
+    totalRounds: rounds.length,
+    roundName: null,
+    questionNum: 1,
+    totalQuestions: shuffledRounds[0].length,
+    question: null,
+    choices: null,
+    answeredCount: 0,
+    totalPlayers: activePlayers(session).length,
+    correctIndex: null,
+    playerResults: null,
+    choiceCounts: null,
+    scores: null,
+    recentAnswers: [],
+    earlyEnd: false,
+    timer: null,
+    finalRanking: null,
+  });
+  session.broadcastState();
+}
+
 module.exports = {
   id: 'trivia',
   name: 'Trivia',
@@ -296,6 +329,7 @@ module.exports = {
       phase: 'topicSelect',
       topic: null,
       error: null,
+      savedQuizzes: quizStore.summaries(),
       joinLocked: false,
       round: null,
       totalRounds: null,
@@ -322,12 +356,33 @@ module.exports = {
   handleAction(session, playerId, action) {
     if (!session.gameState || session.gameState.phase === 'error') return;
 
-    if (action.type === 'setTopic') {
+    if (action.type === 'loadQuiz') {
+      if (session.gameState.phase !== 'topicSelect') return;
+      if (playerId !== session.hostId) return;
+
+      const quiz = quizStore.get(action.quizId);
+      if (!quiz) {
+        session.gameState.error = 'Quiz not found';
+        return;
+      }
+
+      startWithRounds(session, quiz.rounds, quiz.topic);
+      return;
+    }
+
+    if (action.type === 'generateQuiz') {
       if (session.gameState.phase !== 'topicSelect') return;
       if (playerId !== session.hostId) return;
 
       const topic = (action.topic || '').trim();
+      const password = action.password || '';
       if (!topic) return;
+
+      const username = quizUsers.identify(password);
+      if (!username) {
+        session.gameState.error = 'Invalid password';
+        return;
+      }
 
       session.gameState.phase = 'generating';
       session.gameState.topic = topic;
@@ -336,38 +391,42 @@ module.exports = {
 
       generateQuestions(topic).then((rounds) => {
         if (!session.gameState) return;
-        currentRounds = rounds;
-        shuffledRounds = rounds.map((r) => shuffle(r.questions));
-
-        Object.assign(session.gameState, {
-          phase: 'characterSelect',
-          joinLocked: false,
-          round: 1,
-          totalRounds: rounds.length,
-          roundName: null,
-          questionNum: 1,
-          totalQuestions: shuffledRounds[0].length,
-          question: null,
-          choices: null,
-          answeredCount: 0,
-          totalPlayers: activePlayers(session).length,
-          correctIndex: null,
-          playerResults: null,
-          choiceCounts: null,
-          scores: null,
-          recentAnswers: [],
-          earlyEnd: false,
-          timer: null,
-          finalRanking: null,
-        });
-        session.broadcastState();
+        try {
+          quizStore.save({ topic, rounds, creator: username });
+        } catch (err) {
+          console.error('Failed to persist quiz:', err.message);
+        }
+        startWithRounds(session, rounds, topic);
       }).catch((err) => {
         if (!session.gameState) return;
         console.error('Gemini generation failed:', err.message);
         session.gameState.phase = 'topicSelect';
+        session.gameState.savedQuizzes = quizStore.summaries();
         session.gameState.error = err.message;
         session.broadcastState();
       });
+      return;
+    }
+
+    if (action.type === 'deleteQuiz') {
+      if (session.gameState.phase !== 'topicSelect') return;
+      if (playerId !== session.hostId) return;
+
+      const password = action.password || '';
+      const username = quizUsers.identify(password);
+      if (!username) {
+        session.gameState.error = 'Invalid password';
+        return;
+      }
+
+      const result = quizStore.remove(action.quizId, username);
+      if (result.error) {
+        session.gameState.error = result.error;
+        return;
+      }
+
+      session.gameState.error = null;
+      session.gameState.savedQuizzes = quizStore.summaries();
       return;
     }
 

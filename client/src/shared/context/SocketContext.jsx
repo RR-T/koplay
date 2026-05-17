@@ -18,8 +18,8 @@ export function SocketProvider({ role, children }) {
     return () => socket.disconnect();
   }, [role]);
 
-  const emit = useCallback((event, data) => {
-    socketRef.current?.emit(event, data);
+  const emit = useCallback((event, ...args) => {
+    socketRef.current?.emit(event, ...args);
   }, []);
 
   const value = { socket: socketRef.current, sessionState, myId, emit };

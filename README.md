@@ -34,7 +34,7 @@ KoPlay is a local-network party game system built to run on a **Raspberry Pi**. 
 |------|-------------|
 | **Gorillas** | Classic artillery game — lob bananas at opponents across a destructible skyline |
 | **Acrophobia** | Invent funny phrases for a random acronym, then vote for the best one |
-| **Trivia** | Three rounds of increasing difficulty — easy, medium, hard |
+| **Trivia** | Three rounds of increasing difficulty — pick a saved quiz from the library, or generate a new one on any topic via Gemini |
 
 ## Quick Start
 
@@ -76,8 +76,28 @@ npm run dev:client   # Vite HMR on :5173 (proxies Socket.IO to :3000)
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | `3000` | HTTP/WebSocket server port |
+| `GEMINI_API_KEY` | — | Required to generate new trivia quizzes |
+| `GEMINI_MODEL` | `gemini-2.5-flash` | Gemini model to use for quiz generation |
+| `QUIZ_USERS` | `{}` | JSON map of `{password: username}` — only listed users can generate or delete trivia quizzes |
 
-Create a `.env` file in the project root to override defaults.
+Create a `.env` file in the project root to override defaults. See `.env.example`.
+
+## Trivia Quiz Library
+
+Trivia is split into two flows so that exposing the app to the internet doesn't let strangers burn through your Gemini quota:
+
+- **Load a saved quiz** — any host can pick a previously-generated quiz from the library. Open to all.
+- **Generate a new quiz** — the host enters a password; the server looks it up in `QUIZ_USERS` to identify them, calls Gemini, and saves the result to the library tagged with their username. Only the creator (or someone using the same password) can later delete one of their own quizzes.
+
+Generated quizzes persist to `server/data/quizzes.json` (atomic writes). The Docker compose file mounts this directory as a volume so the library survives container rebuilds.
+
+Configure authors in `.env`:
+
+```bash
+QUIZ_USERS={"hunter2":"alex","correcthorse":"sam"}
+```
+
+> **Note:** Passwords travel in plaintext over the socket. Fine on HTTPS, sniffable on plain HTTP — terminate TLS (Caddy / Cloudflare Tunnel / Tailscale Funnel) if exposing publicly.
 
 ## Architecture
 
@@ -86,6 +106,9 @@ tv_games/
 ├── server/
 │   ├── index.js            # Express app + Socket.IO event wiring
 │   ├── sessionManager.js   # Single-session state machine (waiting → lobby → playing)
+│   ├── quizStore.js        # Persistent trivia quiz library (server/data/quizzes.json)
+│   ├── quizUsers.js        # QUIZ_USERS env-var parsing + password → username lookup
+│   ├── data/               # Runtime data dir — gitignored, volume-mounted in Docker
 │   └── games/
 │       ├── index.js        # Game registry
 │       ├── gorillas.js
