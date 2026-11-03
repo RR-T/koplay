@@ -13,6 +13,8 @@ JackBox-style party game system for a shared screen + phone controllers. Any mon
 - **Dev mode:** Run `npm run dev:server` and `npm run dev:client` in separate terminals. Vite dev server on port 5173 proxies Socket.IO to port 3000.
 - **Install deps:** `npm install` (server) and `cd client && npm install` (client)
 - **Docker:** `docker compose up --build`
+- **Gemini is optional:** without `GEMINI_API_KEY`, trivia hides AI generation (`canGenerate` in `server/games/trivia.js`) and only saved quizzes can be picked; `POST /api/quiz` (upload role) works regardless.
+- **Local play (laptop + public tunnel):** `./start.sh` (or `npm run play`; Linux/macOS) — uses `docker-compose.local.yml` (own project name `tv-games-local`, publishes `LOCAL_PORT`, runs a Cloudflare quick tunnel) and a generated gitignored `.env.local`. The production `docker-compose.yml` is separate (Caddy network, `restart: no`).
 
 ## Architecture
 

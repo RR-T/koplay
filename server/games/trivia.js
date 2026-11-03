@@ -47,6 +47,17 @@ function getCurrentQuestion(session) {
   return p.shuffledRounds[gs.round - 1][gs.questionNum - 1];
 }
 
+// AI quiz generation is optional: it needs both a Gemini key on the server
+// and a user with ROLE_GENERATE. Without a key, only saved quizzes (including
+// ones uploaded via POST /api/quiz) can be selected.
+function geminiConfigured() {
+  return !!process.env.GEMINI_API_KEY;
+}
+
+function canGenerate(session) {
+  return geminiConfigured() && !!(session.authUser && (session.authUser.role & ROLE_GENERATE));
+}
+
 async function generateQuestions(topic) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY is not set in environment');
@@ -349,7 +360,7 @@ module.exports = {
       topic: null,
       error: null,
       savedQuizzes: getVisibleQuizzes(session),
-      canGenerate: !!(session.authUser && (session.authUser.role & ROLE_GENERATE)),
+      canGenerate: canGenerate(session),
       joinLocked: false,
       round: null,
       totalRounds: null,
@@ -396,8 +407,10 @@ module.exports = {
       if (playerId !== session.hostId) return;
 
       const auth = session.authUser || null;
-      if (!auth || !(auth.role & ROLE_GENERATE)) {
-        session.gameState.error = 'Quiz generation not enabled for this screen';
+      if (!canGenerate(session)) {
+        session.gameState.error = geminiConfigured()
+          ? 'Quiz generation not enabled for this screen'
+          : 'AI quiz generation is not configured on this server';
         return;
       }
 
@@ -423,7 +436,7 @@ module.exports = {
         console.error('Gemini generation failed:', err.message);
         session.gameState.phase = 'topicSelect';
         session.gameState.savedQuizzes = getVisibleQuizzes(session);
-        session.gameState.canGenerate = !!(session.authUser && (session.authUser.role & ROLE_GENERATE));
+        session.gameState.canGenerate = canGenerate(session);
         session.gameState.error = err.message;
         session.broadcastState();
       });

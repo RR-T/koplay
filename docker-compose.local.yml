@@ -1,0 +1,24 @@
+# Run KoPlay on your own computer and let phones join from anywhere.
+# Use start.sh (Mac/Linux) or start.bat (Windows) — they generate .env.local,
+# start this stack, and open the display on the public tunnel URL.
+name: tv-games-local
+
+services:
+  app:
+    build: .
+    ports:
+      - "${LOCAL_PORT:-3000}:3000"
+    restart: "no"
+    env_file:
+      - .env.local
+    volumes:
+      - ./server/data:/app/server/data
+
+  # Cloudflare quick tunnel: gives the app a public https://*.trycloudflare.com
+  # URL with no account, domain, or router changes. The URL changes every run.
+  tunnel:
+    image: cloudflare/cloudflared:2025.2.1
+    command: tunnel --no-autoupdate --url http://app:3000
+    restart: "no"
+    depends_on:
+      - app
