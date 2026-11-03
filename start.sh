@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # One-command local play: starts KoPlay + a public tunnel, opens the display.
-# Requires Docker. Stop with Ctrl+C.
+# Requires Docker. Stop with Ctrl+C. Run ./setup.sh first to customise settings.
 set -euo pipefail
 cd "$(dirname "$0")"
 
 COMPOSE="docker compose -f docker-compose.local.yml"
-PORT_LOCAL="${LOCAL_PORT:-3000}"
 
 command -v docker >/dev/null || { echo "Docker is required: https://docs.docker.com/get-docker/"; exit 1; }
 docker info >/dev/null 2>&1 || { echo "Docker is installed but not running. Start Docker and try again."; exit 1; }
@@ -28,6 +27,10 @@ ${GEMINI:-GEMINI_API_KEY=}
 ENV
   echo "Created .env.local"
 fi
+
+if [ -z "${LOCAL_PORT:-}" ]; then LOCAL_PORT="$(sed -n 's/^LOCAL_PORT=\([0-9]*\).*/\1/p' .env.local | head -1)"; fi
+export LOCAL_PORT="${LOCAL_PORT:-3000}"
+PORT_LOCAL="$LOCAL_PORT"
 
 CODE="$(sed -n "s/^USERS='{\"\([^\"]*\)\".*/\1/p" .env.local)"
 SCREEN="$(sed -n "s/^SCREENS='{\"\([^\"]*\)\".*/\1/p" .env.local)"

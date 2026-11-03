@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-JackBox-style party game system for a shared screen + phone controllers. Any monitor with a browser displays the game, and players join via phones by scanning a QR code. Runs on any machine that can run Node.js or Docker. Single session model — no room codes, one game at a time, all state in-memory.
+JackBox-style party game system for a shared screen + phone controllers. Any monitor with a browser displays the game, and players join via phones by scanning a QR code. Runs on any machine that can run Node.js or Docker. One room per screen (each with its own 5-letter join code and session), one game at a time per room, all state in-memory. See `server/rooms.js`.
 
 ## Commands
 
@@ -14,7 +14,7 @@ JackBox-style party game system for a shared screen + phone controllers. Any mon
 - **Install deps:** `npm install` (server) and `cd client && npm install` (client)
 - **Docker:** `docker compose up --build`
 - **Gemini is optional:** without `GEMINI_API_KEY`, trivia hides AI generation (`canGenerate` in `server/games/trivia.js`) and only saved quizzes can be picked; `POST /api/quiz` (upload role) works regardless.
-- **Local play (laptop + public tunnel):** `./start.sh` (or `npm run play`; Linux/macOS) — uses `docker-compose.local.yml` (own project name `tv-games-local`, publishes `LOCAL_PORT`, runs a Cloudflare quick tunnel) and a generated gitignored `.env.local`. The production `docker-compose.yml` is separate (Caddy network, `restart: no`).
+- **Local play (laptop + public tunnel):** `./setup.sh` (interactive: writes `.env.local`, pulls images, offers to launch) then `./start.sh` (or `npm run play`; Linux/macOS) — uses `docker-compose.local.yml` (own project name `tv-games-local`, publishes `LOCAL_PORT`, runs a Cloudflare quick tunnel) and a generated gitignored `.env.local`. The production `docker-compose.yml` is separate (Caddy network, `restart: no`).
 
 ## Architecture
 
