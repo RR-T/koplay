@@ -67,4 +67,6 @@ if command -v open >/dev/null; then open "$DISPLAY_URL"
 elif command -v xdg-open >/dev/null; then xdg-open "$DISPLAY_URL" >/dev/null 2>&1 || true
 fi
 
-$COMPOSE logs -f app
+# Run in the background and wait, so signals (Ctrl+C or kill) trigger cleanup immediately.
+$COMPOSE logs -f app &
+wait $!
