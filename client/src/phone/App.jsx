@@ -6,7 +6,7 @@ import LobbyHostScreen from './screens/LobbyHostScreen';
 import LobbyPlayerScreen from './screens/LobbyPlayerScreen';
 import PlayingScreen from './screens/PlayingScreen';
 
-export default function App() {
+export default function App({ onInvalidCode }) {
   const { sessionState, myId, emit, socket } = useSocket();
   const [joined, setJoined] = useState(false);
   const [error, setError] = useState(null);
@@ -15,15 +15,18 @@ export default function App() {
   useEffect(() => {
     if (!socket) return;
     const handler = (data) => {
+      if (data.message === 'Invalid game code') {
+        onInvalidCode?.();
+        return;
+      }
       setError(data.message);
       setJoined(false);
       joinedRef.current = false;
     };
     socket.on('error', handler);
     return () => socket.off('error', handler);
-  }, [socket]);
+  }, [socket, onInvalidCode]);
 
-  // Session reset detection — if we thought we joined but aren't in the player list
   useEffect(() => {
     if (!sessionState) return;
     const amPlayer = sessionState.players.some((p) => p.id === myId);
@@ -33,9 +36,9 @@ export default function App() {
     }
   }, [sessionState, myId]);
 
-  const handleJoin = useCallback((name) => {
+  const handleJoin = useCallback((name, accessCode) => {
     setError(null);
-    emit('player:join', { name, avatarId: null, noiseId: null });
+    emit('player:join', { name, avatarId: null, noiseId: null, accessCode });
     setJoined(true);
     joinedRef.current = true;
   }, [emit]);
@@ -53,7 +56,13 @@ export default function App() {
 
   if (sessionState.state === 'waiting') {
     if (joined) return <WaitingScreen />;
-    return <JoinScreen onJoin={handleJoin} error={error} />;
+    return (
+      <JoinScreen
+        onJoin={handleJoin}
+        error={error}
+        requireAuth={sessionState.hostAuthRequired}
+      />
+    );
   }
 
   if (!amPlayer) {
@@ -61,9 +70,7 @@ export default function App() {
   }
 
   if (sessionState.state === 'lobby') {
-    if (amHost) {
-      return <LobbyHostScreen players={sessionState.players} />;
-    }
+    if (amHost) return <LobbyHostScreen players={sessionState.players} />;
     return <LobbyPlayerScreen players={sessionState.players} />;
   }
 

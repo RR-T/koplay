@@ -13,34 +13,6 @@ const CHOICE_BG = [
 ];
 const CHOICE_BG_PLAIN = ['bg-red-600', 'bg-blue-600', 'bg-amber-500', 'bg-teal-600'];
 
-const CREDS_KEY = 'trivia.creds.v2';
-
-function loadStoredCreds() {
-  try {
-    const raw = localStorage.getItem(CREDS_KEY);
-    if (!raw) return { username: '', password: '' };
-    const parsed = JSON.parse(raw);
-    return {
-      username: typeof parsed.username === 'string' ? parsed.username : '',
-      password: typeof parsed.password === 'string' ? parsed.password : '',
-    };
-  } catch {
-    return { username: '', password: '' };
-  }
-}
-
-function storeCreds(username, password) {
-  try {
-    if (!username && !password) {
-      localStorage.removeItem(CREDS_KEY);
-    } else {
-      localStorage.setItem(CREDS_KEY, JSON.stringify({ username, password }));
-    }
-  } catch {
-    // ignore
-  }
-}
-
 function formatDate(ms) {
   const d = new Date(ms);
   const now = new Date();
@@ -54,18 +26,10 @@ function formatDate(ms) {
 }
 
 function TopicSelectPhase({ gs, isHost, emit }) {
-  const [mode, setMode] = useState('list'); // 'list' | 'signin' | 'generate'
+  const [mode, setMode] = useState('list'); // 'list' | 'generate'
   const [topic, setTopic] = useState('');
-  const [passwordInput, setPasswordInput] = useState('');
-  const [signinError, setSigninError] = useState(null);
-  const [creds, setCreds] = useState(loadStoredCreds);
-
-  useEffect(() => {
-    storeCreds(creds.username, creds.password);
-  }, [creds.username, creds.password]);
 
   const quizzes = gs.savedQuizzes || [];
-  const signedIn = !!(creds.username && creds.password);
 
   if (!isHost) {
     return (
@@ -82,127 +46,55 @@ function TopicSelectPhase({ gs, isHost, emit }) {
   }
 
   function handleDelete(quizId) {
-    if (!signedIn) return;
     if (!confirm('Delete this quiz?')) return;
-    emit('game:action', { type: 'deleteQuiz', quizId, password: creds.password });
-  }
-
-  function handleSignIn(e) {
-    e.preventDefault();
-    const pw = passwordInput;
-    if (!pw) return;
-    setSigninError(null);
-    emit('auth:identify', { password: pw }, (res) => {
-      if (res && res.username) {
-        setCreds({ username: res.username, password: pw });
-        setPasswordInput('');
-        setMode('list');
-      } else {
-        setSigninError('Invalid password');
-      }
-    });
-  }
-
-  function handleSignOut() {
-    setCreds({ username: '', password: '' });
+    emit('game:action', { type: 'deleteQuiz', quizId });
   }
 
   function handleGenerate(e) {
     e.preventDefault();
     const t = topic.trim();
-    if (!t || !signedIn) return;
-    emit('game:action', { type: 'generateQuiz', topic: t, password: creds.password });
+    if (!t) return;
+    emit('game:action', { type: 'generateQuiz', topic: t });
   }
 
   return (
     <div className="min-h-screen flex flex-col gap-4 p-4 pb-8">
-      <div className="flex items-center justify-between mt-2">
-        <h2 className="text-2xl font-bold">Pick a Quiz</h2>
-        {signedIn ? (
-          <button
-            onClick={handleSignOut}
-            className="text-xs text-muted-light underline"
-          >
-            {creds.username} (sign out)
-          </button>
-        ) : (
-          <button
-            onClick={() => setMode('signin')}
-            className="text-xs text-accent underline"
-          >
-            Sign in
-          </button>
-        )}
-      </div>
+      <h2 className="text-2xl font-bold mt-2">Pick a Quiz</h2>
 
       {gs.error && (
         <p className="text-red-400 text-center text-sm bg-red-900/30 rounded-lg p-2">{gs.error}</p>
       )}
 
       {quizzes.length === 0 ? (
-        <p className="text-muted-light text-center text-sm">No saved quizzes yet — sign in and generate one.</p>
+        <p className="text-muted-light text-center text-sm">No quizzes available.</p>
       ) : (
         <ul className="flex flex-col gap-2">
-          {quizzes.map((q) => {
-            const isMine = signedIn && q.creator === creds.username;
-            return (
-              <li key={q.id} className="flex items-stretch bg-surface-light border border-muted/30 rounded-lg overflow-hidden">
+          {quizzes.map((q) => (
+            <li key={q.id} className="flex items-stretch bg-surface-light border border-muted/30 rounded-lg overflow-hidden">
+              <button
+                onClick={() => handleLoad(q.id)}
+                className="flex-1 text-left px-4 py-3 active:bg-surface-light/70"
+              >
+                <div className="font-semibold text-white">{q.topic}</div>
+                <div className="text-xs text-muted-light mt-0.5">
+                  by {q.creator} · {formatDate(q.createdAt)}
+                </div>
+              </button>
+              {q.canDelete && (
                 <button
-                  onClick={() => handleLoad(q.id)}
-                  className="flex-1 text-left px-4 py-3 active:bg-surface-light/70"
+                  onClick={() => handleDelete(q.id)}
+                  className="px-4 text-muted-light hover:text-red-400 active:bg-red-900/30"
+                  aria-label="Delete quiz"
                 >
-                  <div className="font-semibold text-white">{q.topic}</div>
-                  <div className="text-xs text-muted-light mt-0.5">
-                    by {q.creator} · {formatDate(q.createdAt)}
-                  </div>
+                  ×
                 </button>
-                {isMine && (
-                  <button
-                    onClick={() => handleDelete(q.id)}
-                    className="px-4 text-muted-light hover:text-red-400 active:bg-red-900/30"
-                    aria-label="Delete quiz"
-                  >
-                    ×
-                  </button>
-                )}
-              </li>
-            );
-          })}
+              )}
+            </li>
+          ))}
         </ul>
       )}
 
-      {mode === 'signin' && (
-        <form onSubmit={handleSignIn} className="flex flex-col gap-3 mt-2 p-4 bg-surface-light/50 border border-muted/30 rounded-lg">
-          <p className="text-sm text-muted-light">Sign in to generate or delete quizzes.</p>
-          <input
-            type="password"
-            value={passwordInput}
-            onChange={(e) => setPasswordInput(e.target.value)}
-            placeholder="Password"
-            autoFocus
-            className="w-full px-3 py-2 rounded-lg bg-surface-light border border-muted/30 text-white placeholder:text-muted"
-          />
-          {signinError && <p className="text-red-400 text-sm">{signinError}</p>}
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => { setMode('list'); setSigninError(null); setPasswordInput(''); }}
-              className="flex-1 py-3 bg-surface-light border border-muted/30 text-muted-light rounded-lg"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!passwordInput}
-              className="flex-1 py-3 bg-accent hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-lg"
-            >
-              Sign in
-            </button>
-          </div>
-        </form>
-      )}
-
-      {mode === 'generate' && signedIn && (
+      {mode === 'generate' && gs.canGenerate && (
         <form onSubmit={handleGenerate} className="flex flex-col gap-3 mt-2 p-4 bg-surface-light/50 border border-muted/30 rounded-lg">
           <input
             type="text"
@@ -231,9 +123,9 @@ function TopicSelectPhase({ gs, isHost, emit }) {
         </form>
       )}
 
-      {mode === 'list' && (
+      {mode === 'list' && gs.canGenerate && (
         <button
-          onClick={() => signedIn ? setMode('generate') : setMode('signin')}
+          onClick={() => setMode('generate')}
           className="mt-2 w-full py-3 bg-surface-light border border-muted/30 text-white rounded-lg active:bg-surface-light/70"
         >
           + Generate new quiz

@@ -4,6 +4,7 @@ import AVATARS from '../../shared/avatars';
 import PixelAvatar from '../../shared/components/PixelAvatar';
 import QRCodeCanvas from '../../shared/components/QRCodeCanvas';
 import { playSoundById, createMusicElement } from '../../shared/sounds';
+import { useSocket } from '../../shared/context/SocketContext';
 
 const CHOICE_LABELS = ['A', 'B', 'C', 'D'];
 const CHOICE_BG = ['bg-red-600', 'bg-blue-600', 'bg-amber-500', 'bg-teal-600'];
@@ -135,8 +136,10 @@ function RoundIntroPhase({ gs }) {
   );
 }
 
-function CharacterSelectPhase({ gs, players }) {
-  const phoneUrl = window.location.origin + '/phone';
+function CharacterSelectPhase({ gs, players, gameCode }) {
+  const joinUrl = gameCode
+    ? `${window.location.origin}/?code=${gameCode}`
+    : `${window.location.origin}/`;
   const soundedRef = useRef(new Set());
 
   useEffect(() => {
@@ -176,15 +179,27 @@ function CharacterSelectPhase({ gs, players }) {
       </div>
       {!gs.joinLocked && (
         <div className="flex flex-col items-center justify-center gap-4 p-8 bg-black/60">
-          <QRCodeCanvas url={phoneUrl} size={180} />
+          <QRCodeCanvas url={joinUrl} size={180} />
           <p className="text-white/60 text-sm">Scan to join</p>
+          {gameCode && (
+            <p className="font-mono font-bold text-white tracking-widest text-xl">{gameCode}</p>
+          )}
         </div>
       )}
     </div>
   );
 }
 
+function QuestionImage({ src, className = '' }) {
+  return (
+    <div className={`relative min-h-0 ${className}`}>
+      <img src={src} alt="" className="absolute inset-0 w-full h-full object-contain" />
+    </div>
+  );
+}
+
 function QuestionPhase({ gs, showAnswers }) {
+  const hasImage = !!gs.image;
   return (
     <div
       className="h-screen flex flex-col p-6 gap-4 bg-cover bg-center"
@@ -193,12 +208,15 @@ function QuestionPhase({ gs, showAnswers }) {
       <div className="flex items-center text-white/70 text-lg bg-black/40 rounded-xl px-4 py-2">
         <span>{gs.roundName} · Q{gs.questionNum}/{gs.totalQuestions}</span>
       </div>
-      <div className="flex-[2] flex items-center justify-center px-6 py-4 bg-black/40 rounded-xl">
-        <p className="text-7xl font-bold text-white text-center leading-tight">{gs.question}</p>
+      <div className={`${hasImage ? '' : 'flex-[2]'} flex items-center justify-center px-6 py-4 bg-black/40 rounded-xl`}>
+        <p className={`${hasImage ? 'text-4xl' : 'text-7xl'} font-bold text-white text-center leading-tight`}>
+          {gs.question}
+        </p>
       </div>
+      {hasImage && <QuestionImage src={gs.image} className="flex-[2]" />}
       {showAnswers && (
         <>
-          <AnswerGrid choices={gs.choices} />
+          <AnswerGrid choices={gs.choices} className={hasImage ? 'flex-[2]' : 'flex-1'} />
           <AnsweredRow entries={gs.recentAnswers} />
         </>
       )}
@@ -220,23 +238,27 @@ function RevealPhase({ gs, players }) {
         {gs.question}
       </div>
 
-      {/* Bars — all anchored to the same baseline, height driven by vote count */}
-      <div className="flex-1 flex items-end gap-6 px-8">
-        {gs.choices.map((choice, i) => {
-          const count = counts[i];
-          const isCorrect = i === gs.correctIndex;
-          return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <span className={`text-2xl font-bold ${isCorrect ? 'text-white' : 'text-white/60'}`}>
-                {count}{isCorrect ? ' ✓' : ''}
-              </span>
-              <div
-                className={`w-full rounded-t-xl transition-all duration-700 ${CHOICE_BAR[i]} ${isCorrect ? '' : 'opacity-20'}`}
-                style={{ height: `${(count / maxCount) * 50}vh` }}
-              />
-            </div>
-          );
-        })}
+      {/* Bars — all anchored to the same baseline, height driven by vote count.
+          When the question has an image it stays visible beside the bars. */}
+      <div className="flex-1 flex min-h-0">
+        {gs.image && <QuestionImage src={gs.image} className="w-1/3" />}
+        <div className="flex-1 flex items-end gap-6 px-8">
+          {gs.choices.map((choice, i) => {
+            const count = counts[i];
+            const isCorrect = i === gs.correctIndex;
+            return (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <span className={`text-2xl font-bold ${isCorrect ? 'text-white' : 'text-white/60'}`}>
+                  {count}{isCorrect ? ' ✓' : ''}
+                </span>
+                <div
+                  className={`w-full rounded-t-xl transition-all duration-700 ${CHOICE_BAR[i]} ${isCorrect ? '' : 'opacity-20'}`}
+                  style={{ height: `${(count / maxCount) * 50}vh` }}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Labels — separate fixed row below the bars */}
@@ -261,6 +283,8 @@ function RevealPhase({ gs, players }) {
 }
 
 export default function TriviaTV({ gameState: gs, players }) {
+  const { sessionState } = useSocket();
+  const gameCode = sessionState?.gameCode || null;
   // Track which question answers are visible for — auto-false when question changes
   const [showAnswersKey, setShowAnswersKey] = useState(null);
   const showAnswers = showAnswersKey === `${gs.round}-${gs.questionNum}`;
@@ -403,7 +427,7 @@ export default function TriviaTV({ gameState: gs, players }) {
   }
 
   if (gs.phase === 'characterSelect') {
-    return <CharacterSelectPhase gs={gs} players={players} />;
+    return <CharacterSelectPhase gs={gs} players={players} gameCode={gameCode} />;
   }
 
   if (gs.phase === 'roundIntro') {

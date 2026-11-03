@@ -1,10 +1,17 @@
 services:
-  tv-games:
+  app:
     build: .
-    ports:
-      - "3000:3000"
-    restart: unless-stopped
+    expose:
+      - 3000
+    hostname: tv-games
+    restart: no
     env_file:
       - .env
     volumes:
       - ./server/data:/app/server/data
+    networks:
+      - caddy_net
+
+networks:
+  caddy_net:
+    external: true

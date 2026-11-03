@@ -4,9 +4,10 @@ const VOTE_TIME = 30;
 const RESULTS_TIME = 8;
 const MIN_PLAYERS = 3;
 
-// Private state — never broadcast
-let roundData = null;
-let phaseTimer = null;
+function priv(session) {
+  if (!session._private) session._private = {};
+  return session._private;
+}
 
 function generateAcronym() {
   const consonants = 'BCDFGHJKLMNPRSTVW';
@@ -19,22 +20,24 @@ function generateAcronym() {
   return letters.join('');
 }
 
-function clearTimer() {
-  if (phaseTimer) {
-    clearTimeout(phaseTimer);
-    phaseTimer = null;
+function clearTimer(session) {
+  const p = priv(session);
+  if (p.phaseTimer) {
+    clearTimeout(p.phaseTimer);
+    p.phaseTimer = null;
   }
 }
 
 function startPhase(session, phase, durationSec, onExpire) {
-  clearTimer();
+  clearTimer(session);
+  const p = priv(session);
   session.gameState.phase = phase;
   session.gameState.timer = {
     endsAt: Date.now() + durationSec * 1000,
     duration: durationSec,
   };
-  phaseTimer = setTimeout(() => {
-    phaseTimer = null;
+  p.phaseTimer = setTimeout(() => {
+    p.phaseTimer = null;
     onExpire();
   }, durationSec * 1000);
 }
@@ -46,8 +49,9 @@ function activePlayers(session) {
 function startSubmitting(session) {
   const acronym = generateAcronym();
   const players = activePlayers(session);
+  const p = priv(session);
 
-  roundData = {
+  p.roundData = {
     submissions: new Map(),
     votes: new Map(),
     shuffledOrder: [],
@@ -69,23 +73,22 @@ function startSubmitting(session) {
 }
 
 function endSubmitting(session) {
-  clearTimer();
+  clearTimer(session);
+  const p = priv(session);
+  const roundData = p.roundData;
 
   if (roundData.submissions.size === 0) {
-    // No submissions — skip to results with empty
     showResults(session);
     return;
   }
 
   if (roundData.submissions.size === 1) {
-    // Only one submission — skip voting, give them 1 point
     const [authorId] = roundData.submissions.keys();
     session.gameState.scores[authorId] = (session.gameState.scores[authorId] || 0) + 1;
     showResults(session);
     return;
   }
 
-  // Shuffle submissions for anonymous voting
   const entries = Array.from(roundData.submissions.entries());
   for (let i = entries.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -107,9 +110,10 @@ function endSubmitting(session) {
 }
 
 function endVoting(session) {
-  clearTimer();
+  clearTimer(session);
+  const p = priv(session);
+  const roundData = p.roundData;
 
-  // Tally votes
   for (const [, votedIndex] of roundData.votes) {
     const [authorId] = roundData.shuffledOrder[votedIndex];
     session.gameState.scores[authorId] = (session.gameState.scores[authorId] || 0) + 1;
@@ -119,9 +123,10 @@ function endVoting(session) {
 }
 
 function showResults(session) {
-  clearTimer();
+  clearTimer(session);
+  const p = priv(session);
+  const roundData = p.roundData;
 
-  // Build results with author reveals
   const results = roundData.shuffledOrder.map(([authorId, text], idx) => {
     let voteCount = 0;
     for (const [, votedIndex] of roundData.votes) {
@@ -145,14 +150,14 @@ function showResults(session) {
 
   session.broadcastState();
 
-  phaseTimer = setTimeout(() => {
-    phaseTimer = null;
+  p.phaseTimer = setTimeout(() => {
+    p.phaseTimer = null;
     nextRound(session);
   }, RESULTS_TIME * 1000);
 }
 
 function nextRound(session) {
-  clearTimer();
+  clearTimer(session);
   session.gameState.round++;
 
   if (session.gameState.round > TOTAL_ROUNDS) {
@@ -164,11 +169,10 @@ function nextRound(session) {
 }
 
 function gameOver(session) {
-  clearTimer();
+  clearTimer(session);
   session.gameState.phase = 'gameover';
   session.gameState.timer = null;
 
-  // Build final ranking
   const ranking = activePlayers(session).map((id) => ({
     id,
     name: session.players.get(id).name,
@@ -181,6 +185,8 @@ function gameOver(session) {
 }
 
 function checkEarlyAdvance(session) {
+  const p = priv(session);
+  const roundData = p.roundData;
   const players = activePlayers(session);
 
   if (session.gameState.phase === 'submitting') {
@@ -191,12 +197,7 @@ function checkEarlyAdvance(session) {
   }
 
   if (session.gameState.phase === 'voting') {
-    // Count eligible voters (those who can vote — everyone except single-submission author)
-    const eligibleVoters = players.filter((id) => {
-      // Exclude players whose submission is the only option (handled by canVote check)
-      return true;
-    });
-    if (roundData.votes.size >= eligibleVoters.length) {
+    if (roundData.votes.size >= players.length) {
       endVoting(session);
       return true;
     }
@@ -240,8 +241,9 @@ module.exports = {
       finalRanking: null,
     };
 
-    roundData = null;
-    clearTimer();
+    const p = priv(session);
+    p.roundData = null;
+    clearTimer(session);
     startSubmitting(session);
 
     return session.gameState;
@@ -249,25 +251,25 @@ module.exports = {
 
   handleAction(session, playerId, action) {
     if (!session.gameState || session.gameState.phase === 'error') return;
+    const p = priv(session);
 
     if (action.type === 'submit') {
       if (session.gameState.phase !== 'submitting') return;
-      if (!roundData) return;
-      if (roundData.submissions.has(playerId)) return;
+      if (!p.roundData) return;
+      if (p.roundData.submissions.has(playerId)) return;
 
       const text = (action.text || '').trim();
       if (!text || text.length > 200) return;
 
-      // Validate: word count matches acronym length, each word starts with correct letter
       const words = text.split(/\s+/);
-      const acronym = roundData.acronym;
+      const acronym = p.roundData.acronym;
       if (words.length !== acronym.length) return;
       for (let i = 0; i < words.length; i++) {
         if (words[i][0].toUpperCase() !== acronym[i]) return;
       }
 
-      roundData.submissions.set(playerId, text);
-      session.gameState.submittedCount = roundData.submissions.size;
+      p.roundData.submissions.set(playerId, text);
+      session.gameState.submittedCount = p.roundData.submissions.size;
 
       if (!checkEarlyAdvance(session)) {
         session.broadcastState();
@@ -277,18 +279,17 @@ module.exports = {
 
     if (action.type === 'vote') {
       if (session.gameState.phase !== 'voting') return;
-      if (!roundData) return;
-      if (roundData.votes.has(playerId)) return;
+      if (!p.roundData) return;
+      if (p.roundData.votes.has(playerId)) return;
 
       const index = action.index;
-      if (typeof index !== 'number' || index < 0 || index >= roundData.shuffledOrder.length) return;
+      if (typeof index !== 'number' || index < 0 || index >= p.roundData.shuffledOrder.length) return;
 
-      // Can't vote for own submission
-      const [authorId] = roundData.shuffledOrder[index];
+      const [authorId] = p.roundData.shuffledOrder[index];
       if (authorId === playerId) return;
 
-      roundData.votes.set(playerId, index);
-      session.gameState.votedCount = roundData.votes.size;
+      p.roundData.votes.set(playerId, index);
+      session.gameState.votedCount = p.roundData.votes.size;
 
       if (!checkEarlyAdvance(session)) {
         session.broadcastState();
@@ -309,17 +310,15 @@ module.exports = {
   onPlayerLeave(session, playerId) {
     if (!session.gameState || session.gameState.phase === 'error') return;
 
-    // Update total players
     const remaining = activePlayers(session).filter((id) => id !== playerId);
     session.gameState.totalPlayers = remaining.length;
 
     if (remaining.length < MIN_PLAYERS) {
-      clearTimer();
+      clearTimer(session);
       gameOver(session);
       return;
     }
 
-    // Check if leaving player allows phase to advance
     if (session.gameState.phase === 'submitting' || session.gameState.phase === 'voting') {
       checkEarlyAdvance(session);
     }

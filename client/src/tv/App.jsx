@@ -5,9 +5,9 @@ import WaitingScreen from './screens/WaitingScreen';
 import LobbyScreen from './screens/LobbyScreen';
 import PlayingScreen from './screens/PlayingScreen';
 
-export default function App() {
+export default function App({ skipIntro = false }) {
   const { sessionState } = useSocket();
-  const [introFinished, setIntroFinished] = useState(false);
+  const [introFinished, setIntroFinished] = useState(skipIntro);
   const pendingStateRef = useRef(null);
   const [activeState, setActiveState] = useState(null);
 
@@ -34,21 +34,19 @@ export default function App() {
     return <IntroScreen onComplete={handleIntroComplete} />;
   }
 
-  if (!activeState) {
-    return <WaitingScreen />;
-  }
+  const gameCode = activeState?.gameCode || null;
 
-  if (activeState.state === 'waiting') {
-    return <WaitingScreen />;
+  if (!activeState || activeState.state === 'waiting') {
+    return <WaitingScreen gameCode={gameCode} />;
   }
 
   if (activeState.state === 'lobby') {
-    return <LobbyScreen players={activeState.players} />;
+    return <LobbyScreen players={activeState.players} gameCode={gameCode} />;
   }
 
   if (activeState.state === 'playing') {
     return <PlayingScreen state={activeState} />;
   }
 
-  return <WaitingScreen />;
+  return <WaitingScreen gameCode={gameCode} />;
 }

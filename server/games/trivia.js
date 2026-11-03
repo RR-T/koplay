@@ -2,18 +2,29 @@ const QUESTION_TIME = 60;
 const MIN_PLAYERS = 1;
 
 const quizStore = require('../quizStore');
-const quizUsers = require('../quizUsers');
+const { ROLE_GENERATE, ROLE_ADMIN } = require('../users');
 
-// Private state — never broadcast
-let roundAnswers = null; // Map<playerId, choiceIndex>
-let phaseTimer = null;
-let shuffledRounds = null; // questions shuffled per round
-let currentRounds = null;  // [{name, questions}] from Gemini
+function getVisibleQuizzes(session) {
+  const auth = session.authUser || null;
+  if (!auth) return [];
+  const all = quizStore.summaries();
+  const filtered = (auth.role & ROLE_ADMIN) ? all : all.filter((q) => q.creator === auth.name);
+  return filtered.map((q) => ({
+    ...q,
+    canDelete: !!(auth.role & ROLE_ADMIN) || q.creator === auth.name,
+  }));
+}
 
-function clearTimer() {
-  if (phaseTimer) {
-    clearTimeout(phaseTimer);
-    phaseTimer = null;
+function priv(session) {
+  if (!session._private) session._private = {};
+  return session._private;
+}
+
+function clearTimer(session) {
+  const p = priv(session);
+  if (p.phaseTimer) {
+    clearTimeout(p.phaseTimer);
+    p.phaseTimer = null;
   }
 }
 
@@ -32,9 +43,8 @@ function activePlayers(session) {
 
 function getCurrentQuestion(session) {
   const gs = session.gameState;
-  const roundIndex = gs.round - 1;
-  const qIndex = gs.questionNum - 1;
-  return shuffledRounds[roundIndex][qIndex];
+  const p = priv(session);
+  return p.shuffledRounds[gs.round - 1][gs.questionNum - 1];
 }
 
 async function generateQuestions(topic) {
@@ -87,7 +97,6 @@ Rules:
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) throw new Error('No content in Gemini response');
 
-  // Strip markdown code fences if present (```json ... ```)
   const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
   const parsed = JSON.parse(cleaned);
   if (!Array.isArray(parsed.rounds) || parsed.rounds.length < 3) {
@@ -103,13 +112,15 @@ Rules:
 }
 
 function showRoundIntro(session) {
-  clearTimer();
+  clearTimer(session);
   if (!session.gameState) return;
   const gs = session.gameState;
+  const p = priv(session);
 
   gs.phase = 'roundIntro';
-  gs.roundName = currentRounds[gs.round - 1].name;
+  gs.roundName = p.currentRounds[gs.round - 1].name;
   gs.question = null;
+  gs.image = null;
   gs.choices = null;
   gs.timer = null;
 
@@ -117,15 +128,17 @@ function showRoundIntro(session) {
 }
 
 function startQuestion(session) {
-  clearTimer();
-  roundAnswers = new Map();
+  clearTimer(session);
+  const p = priv(session);
+  p.roundAnswers = new Map();
 
   const q = getCurrentQuestion(session);
   const gs = session.gameState;
 
   gs.phase = 'question';
-  gs.roundName = currentRounds[gs.round - 1].name;
+  gs.roundName = p.currentRounds[gs.round - 1].name;
   gs.question = q.question;
+  gs.image = q.image || null;
   gs.choices = q.choices;
   gs.answeredCount = 0;
   gs.totalPlayers = activePlayers(session).length;
@@ -141,32 +154,31 @@ function startQuestion(session) {
 
   session.broadcastState();
 
-  phaseTimer = setTimeout(() => {
-    phaseTimer = null;
+  p.phaseTimer = setTimeout(() => {
+    p.phaseTimer = null;
     endQuestion(session, false);
   }, QUESTION_TIME * 1000);
 }
 
 function endQuestion(session, early) {
-  clearTimer();
+  clearTimer(session);
   if (!session.gameState) return;
-
   session.gameState.earlyEnd = early;
   showReveal(session);
 }
 
 function showReveal(session) {
-  clearTimer();
+  clearTimer(session);
   if (!session.gameState) return;
 
   const q = getCurrentQuestion(session);
   const gs = session.gameState;
+  const p = priv(session);
   const players = activePlayers(session);
 
-  // Score correct answers
   const playerResults = [];
   for (const id of players) {
-    const answer = roundAnswers.get(id);
+    const answer = p.roundAnswers.get(id);
     const correct = answer === q.answer;
     if (correct) {
       gs.scores[id] = (gs.scores[id] || 0) + 1;
@@ -180,9 +192,8 @@ function showReveal(session) {
     });
   }
 
-  // Count votes per choice
   const choiceCounts = [0, 0, 0, 0];
-  for (const [, idx] of roundAnswers) {
+  for (const [, idx] of p.roundAnswers) {
     if (idx != null && idx >= 0 && idx < 4) choiceCounts[idx]++;
   }
 
@@ -196,10 +207,11 @@ function showReveal(session) {
 }
 
 function nextQuestion(session) {
-  clearTimer();
+  clearTimer(session);
   if (!session.gameState) return;
   const gs = session.gameState;
-  const totalQuestions = shuffledRounds[gs.round - 1].length;
+  const p = priv(session);
+  const totalQuestions = p.shuffledRounds[gs.round - 1].length;
 
   gs.questionNum++;
 
@@ -212,11 +224,12 @@ function nextQuestion(session) {
 }
 
 function showRoundEnd(session) {
-  clearTimer();
+  clearTimer(session);
   const gs = session.gameState;
 
   gs.phase = 'roundEnd';
   gs.question = null;
+  gs.image = null;
   gs.choices = null;
   gs.correctIndex = null;
   gs.playerResults = null;
@@ -227,9 +240,10 @@ function showRoundEnd(session) {
 }
 
 function nextRound(session) {
-  clearTimer();
+  clearTimer(session);
   if (!session.gameState) return;
   const gs = session.gameState;
+  const p = priv(session);
 
   gs.round++;
 
@@ -239,17 +253,18 @@ function nextRound(session) {
   }
 
   gs.questionNum = 1;
-  gs.totalQuestions = shuffledRounds[gs.round - 1].length;
+  gs.totalQuestions = p.shuffledRounds[gs.round - 1].length;
   showRoundIntro(session);
 }
 
 function gameOver(session) {
-  clearTimer();
+  clearTimer(session);
   const gs = session.gameState;
 
   gs.phase = 'gameover';
   gs.timer = null;
   gs.question = null;
+  gs.image = null;
   gs.choices = null;
   gs.correctIndex = null;
   gs.playerResults = null;
@@ -267,8 +282,9 @@ function gameOver(session) {
 }
 
 function checkAllAnswered(session) {
+  const p = priv(session);
   const players = activePlayers(session);
-  if (roundAnswers.size >= players.length) {
+  if (p.roundAnswers.size >= players.length) {
     endQuestion(session, true);
     return true;
   }
@@ -276,8 +292,9 @@ function checkAllAnswered(session) {
 }
 
 function startWithRounds(session, rounds, topic) {
-  currentRounds = rounds;
-  shuffledRounds = rounds.map((r) => shuffle(r.questions));
+  const p = priv(session);
+  p.currentRounds = rounds;
+  p.shuffledRounds = rounds.map((r) => shuffle(r.questions));
 
   Object.assign(session.gameState, {
     phase: 'characterSelect',
@@ -288,8 +305,9 @@ function startWithRounds(session, rounds, topic) {
     totalRounds: rounds.length,
     roundName: null,
     questionNum: 1,
-    totalQuestions: shuffledRounds[0].length,
+    totalQuestions: p.shuffledRounds[0].length,
     question: null,
+    image: null,
     choices: null,
     answeredCount: 0,
     totalPlayers: activePlayers(session).length,
@@ -320,16 +338,18 @@ module.exports = {
       };
     }
 
-    shuffledRounds = null;
-    currentRounds = null;
-    roundAnswers = null;
-    clearTimer();
+    const p = priv(session);
+    p.shuffledRounds = null;
+    p.currentRounds = null;
+    p.roundAnswers = null;
+    clearTimer(session);
 
     session.gameState = {
       phase: 'topicSelect',
       topic: null,
       error: null,
-      savedQuizzes: quizStore.summaries(),
+      savedQuizzes: getVisibleQuizzes(session),
+      canGenerate: !!(session.authUser && (session.authUser.role & ROLE_GENERATE)),
       joinLocked: false,
       round: null,
       totalRounds: null,
@@ -337,6 +357,7 @@ module.exports = {
       questionNum: null,
       totalQuestions: null,
       question: null,
+      image: null,
       choices: null,
       answeredCount: 0,
       totalPlayers: players.length,
@@ -374,15 +395,14 @@ module.exports = {
       if (session.gameState.phase !== 'topicSelect') return;
       if (playerId !== session.hostId) return;
 
-      const topic = (action.topic || '').trim();
-      const password = action.password || '';
-      if (!topic) return;
-
-      const username = quizUsers.identify(password);
-      if (!username) {
-        session.gameState.error = 'Invalid password';
+      const auth = session.authUser || null;
+      if (!auth || !(auth.role & ROLE_GENERATE)) {
+        session.gameState.error = 'Quiz generation not enabled for this screen';
         return;
       }
+
+      const topic = (action.topic || '').trim();
+      if (!topic) return;
 
       session.gameState.phase = 'generating';
       session.gameState.topic = topic;
@@ -392,7 +412,8 @@ module.exports = {
       generateQuestions(topic).then((rounds) => {
         if (!session.gameState) return;
         try {
-          quizStore.save({ topic, rounds, creator: username });
+          const player = session.players.get(playerId);
+          quizStore.save({ topic, rounds, creator: auth.name, ip: player ? player.ip : null });
         } catch (err) {
           console.error('Failed to persist quiz:', err.message);
         }
@@ -401,7 +422,8 @@ module.exports = {
         if (!session.gameState) return;
         console.error('Gemini generation failed:', err.message);
         session.gameState.phase = 'topicSelect';
-        session.gameState.savedQuizzes = quizStore.summaries();
+        session.gameState.savedQuizzes = getVisibleQuizzes(session);
+        session.gameState.canGenerate = !!(session.authUser && (session.authUser.role & ROLE_GENERATE));
         session.gameState.error = err.message;
         session.broadcastState();
       });
@@ -412,21 +434,18 @@ module.exports = {
       if (session.gameState.phase !== 'topicSelect') return;
       if (playerId !== session.hostId) return;
 
-      const password = action.password || '';
-      const username = quizUsers.identify(password);
-      if (!username) {
-        session.gameState.error = 'Invalid password';
-        return;
-      }
+      const auth = session.authUser || null;
+      if (!auth) { session.gameState.error = 'Not authorized'; return; }
 
-      const result = quizStore.remove(action.quizId, username);
+      const isAdmin = !!(auth.role & ROLE_ADMIN);
+      const result = quizStore.remove(action.quizId, isAdmin ? null : auth.name);
       if (result.error) {
         session.gameState.error = result.error;
         return;
       }
 
       session.gameState.error = null;
-      session.gameState.savedQuizzes = quizStore.summaries();
+      session.gameState.savedQuizzes = getVisibleQuizzes(session);
       return;
     }
 
@@ -436,7 +455,6 @@ module.exports = {
       const { avatarId, noiseId } = action;
       if (!avatarId || !noiseId) return;
 
-      // Check uniqueness against other players
       for (const [id, player] of session.players) {
         if (id === playerId) continue;
         if (player.avatarId === avatarId) return;
@@ -474,14 +492,15 @@ module.exports = {
 
     if (action.type === 'answer') {
       if (session.gameState.phase !== 'question') return;
-      if (!roundAnswers) return;
-      if (roundAnswers.has(playerId)) return;
+      const p = priv(session);
+      if (!p.roundAnswers) return;
+      if (p.roundAnswers.has(playerId)) return;
 
       const index = action.index;
       if (typeof index !== 'number' || index < 0 || index >= session.gameState.choices.length) return;
 
-      roundAnswers.set(playerId, index);
-      session.gameState.answeredCount = roundAnswers.size;
+      p.roundAnswers.set(playerId, index);
+      session.gameState.answeredCount = p.roundAnswers.size;
 
       const player = session.players.get(playerId);
       if (player) {
@@ -492,8 +511,6 @@ module.exports = {
         });
       }
 
-      // Always broadcast question-phase update first so TV plays the sound,
-      // then check if all answered and transition to reveal if so.
       session.broadcastState();
       checkAllAnswered(session);
       return;
@@ -518,7 +535,7 @@ module.exports = {
       if (playerId !== session.hostId) return;
 
       this.init(session);
-      session.broadcastState();
+      // Don't broadcast here — index.js will auto-load a pushed quiz first if set
       return;
     }
   },
@@ -539,12 +556,13 @@ module.exports = {
     session.gameState.totalPlayers = remaining.length;
 
     if (remaining.length < MIN_PLAYERS) {
-      clearTimer();
+      clearTimer(session);
       gameOver(session);
       return;
     }
 
-    if (session.gameState.phase === 'question' && roundAnswers) {
+    const p = priv(session);
+    if (session.gameState.phase === 'question' && p.roundAnswers) {
       checkAllAnswered(session);
     }
   },
