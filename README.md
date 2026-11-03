@@ -71,6 +71,23 @@ npm run dev:server   # Express + Socket.IO on :3000
 npm run dev:client   # Vite HMR on :5173 (proxies Socket.IO to :3000)
 ```
 
+## Play from your computer (one command)
+
+Run KoPlay on your own laptop, show the game on the same machine, and let phones join from **anywhere** — they don't need to be on your Wi-Fi. The only prerequisite is [Docker](https://docs.docker.com/get-docker/).
+
+```bash
+./start.sh        # macOS / Linux  (or: npm run play)
+start.bat         # Windows (double-click)
+```
+
+The script:
+
+1. creates a private `.env.local` on first run (random host access code + screen ID; add `GEMINI_API_KEY=` there to enable quiz generation),
+2. starts the app and a [Cloudflare quick tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/) via `docker-compose.local.yml` — no account, domain or router changes needed,
+3. prints a public `https://….trycloudflare.com` URL and opens the display in your browser on it, so the on-screen QR code works for phones anywhere.
+
+The first player to join types the printed **host access code** and becomes host. Press Ctrl+C (or any key on Windows) to stop everything. The tunnel URL changes on every run, and anyone with it can reach the game while it is running. Set `LOCAL_PORT` to use a port other than 3000.
+
 ## Configuration
 
 | Variable | Default | Description |
