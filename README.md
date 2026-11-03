@@ -18,15 +18,19 @@
 
 KoPlay is a JackBox-style party game system. Any monitor with a web browser shows the game and a QR code; players join from their phones. Games: **Gorillas** (artillery), **Acrophobia** (invent funny acronyms, vote for the best) and **Trivia** (saved quizzes, optionally AI-generated).
 
-## Play from your computer
+## Quick start
 
-Needs [Docker](https://docs.docker.com/get-docker/) on Linux or macOS.
+Needs [Docker](https://docs.docker.com/get-docker/) on Linux or macOS (Windows: use WSL).
 
 ```bash
-./start.sh        # or: npm run play
+git clone https://github.com/alexanderbailey/tv_games.git
+cd tv_games
+./setup.sh
 ```
 
-This starts the app and a [Cloudflare quick tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/), opens the display on the public URL, and prints the link for phones (they can be on any network). The first player to join enters the printed host code and becomes host. Ctrl+C stops everything. Anyone with the tunnel URL can reach the game while it runs.
+`setup.sh` asks a few questions (your name, a host access code, an optional Gemini key, the port), writes `.env.local`, prepares the Docker images, then offers to launch. Next time just run `./start.sh` (or `npm run play`).
+
+Launching starts the app plus a [Cloudflare quick tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/) (no account needed), opens the display on its public URL and prints the link for phones, which can be on any network. The first player to join enters the host code and becomes host. Ctrl+C stops everything. Anyone with the tunnel URL can reach the game while it runs.
 
 ## Other ways to run
 
@@ -40,7 +44,7 @@ Display: `/screen` (log in with an access code) or `/screen/<screen-id>`. Phones
 
 ## Configuration
 
-Set in `.env` (see `.env.example`); `start.sh` writes its own `.env.local`.
+Set in `.env` (see `.env.example`); `setup.sh` writes its own `.env.local` for local play.
 
 | Variable | Description |
 |----------|-------------|
@@ -49,6 +53,7 @@ Set in `.env` (see `.env.example`); `start.sh` writes its own `.env.local`.
 | `GEMINI_API_KEY` | Optional. Enables AI quiz generation; without it only saved or uploaded quizzes are available |
 | `GEMINI_MODEL` | Optional. Defaults to `gemini-2.5-flash` |
 | `PORT` | Server port, default `3000` |
+| `LOCAL_PORT` | Host port for local play (`.env.local`), default `3000` |
 
 ## More
 
