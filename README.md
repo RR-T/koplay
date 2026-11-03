@@ -28,7 +28,7 @@ cd tv_games
 ./setup.sh
 ```
 
-`setup.sh` asks a few questions (your name and the port), writes `.env.local`, prepares the Docker images, then offers to launch. AI quiz generation is optional: add `GEMINI_API_KEY=...` to `.env.local` to enable it. Next time just run `./start.sh` (or `npm run play`).
+`setup.sh` asks a few questions (just your name), writes `.env.local`, prepares the Docker images, then offers to launch. AI quiz generation is optional: add `GEMINI_API_KEY=...` to `.env.local` to enable it. Next time just run `./start.sh` (or `npm run play`).
 
 `setup.sh` can also install a Claude Code skill: with KoPlay running, ask Claude to "quiz me on <anything>" (or run `/koplay-quiz`) and it writes the quiz and puts it on your screen. It only talks to `localhost`, so quiz content never leaves your machine apart from what Claude itself processes.
 
@@ -55,7 +55,7 @@ Set in `.env` (see `.env.example`); `setup.sh` writes its own `.env.local` for l
 | `GEMINI_API_KEY` | Optional. Enables AI quiz generation; without it only saved or uploaded quizzes are available |
 | `GEMINI_MODEL` | Optional. Defaults to `gemini-2.5-flash` |
 | `PORT` | Server port, default `3000` |
-| `LOCAL_PORT` | Host port for local play (`.env.local`), default `4747` |
+| `LOCAL_PORT` | Optional override of the local-play host port (default `4747`) |
 
 ## More
 

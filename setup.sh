@@ -59,13 +59,6 @@ if [ -z "${SKIP_CONFIG:-}" ]; then
     HOST_NAME="$REPLY_VAL"; valid "$HOST_NAME" && break; say "  Use only letters, numbers, - and _."
   done
 
-  say
-  while :; do
-    ask "Local port" "${LOCAL_PORT:-4747}"
-    PORT_LOCAL="$REPLY_VAL"
-    case "$PORT_LOCAL" in ''|*[!0-9]*) say "  Enter a number." ;; *) [ "$PORT_LOCAL" -ge 1 ] && [ "$PORT_LOCAL" -le 65535 ] && break; say "  Enter a port from 1 to 65535." ;; esac
-  done
-
   SCREEN="$(rand_hex 16)"
   umask 077
   cat > "$ENV_FILE" <<ENV
@@ -74,7 +67,6 @@ if [ -z "${SKIP_CONFIG:-}" ]; then
 # tunnel never serves the upload API. LOCAL_USER is the owner name on saved quizzes.
 LOCAL_USER=$HOST_NAME
 SCREENS='{"$SCREEN":{"label":"Local screen","owners":["$HOST_NAME"]}}'
-LOCAL_PORT=$PORT_LOCAL
 # Optional: add GEMINI_API_KEY=... to enable AI quiz generation (see docs/access-and-quizzes.md).
 ENV
   say
