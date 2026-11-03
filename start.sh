@@ -2,7 +2,7 @@
 # One-command local play: starts KoPlay + a public tunnel, opens the display.
 # Requires Docker (Linux / macOS). Stop with Ctrl+C.
 #
-#   ./start.sh                  start KoPlay
+#   ./start.sh                  start KoPlay (offers to install the Claude skill first)
 #   ./start.sh --install-skill  install the Claude Code quiz skill, then exit
 #
 # Optional settings (environment variables, or a .env file in this folder):
@@ -39,6 +39,20 @@ command -v docker >/dev/null || {
 docker info >/dev/null 2>&1 || { echo "Docker is installed but not running (or your user can't access it). Start Docker and try again."; exit 1; }
 docker compose version >/dev/null 2>&1 || { echo "The 'docker compose' plugin is required: https://docs.docker.com/compose/install/"; exit 1; }
 
+# Offer the Claude Code quiz skill (skipped once it is installed). Asked up front so you
+# can answer before the first build starts. No input / end of input counts as "no".
+if [ ! -f "$SKILL_DST/SKILL.md" ] && [ -f "$SKILL_SRC" ]; then
+  echo
+  echo "KoPlay has a Claude Code skill: ask Claude e.g. \"Quiz me on the Roman Empire\" and it"
+  echo "writes the quiz and puts it on your screen. It only talks to localhost."
+  read -r -p "Install it to $SKILL_DST? [Y/n]: " ans || ans="n"
+  case "${ans:-Y}" in
+    [Yy]*) install_skill ;;
+    *)     echo "Skipped. You can install it later with: ./start.sh --install-skill" ;;
+  esac
+  echo
+fi
+
 # Port: environment, then .env, then 4747. Exported so docker compose uses the same value.
 if [ -z "${LOCAL_PORT:-}" ] && [ -f .env ]; then
   LOCAL_PORT="$(sed -n 's/^LOCAL_PORT=\([0-9]*\).*/\1/p' .env | head -1)"
@@ -72,9 +86,6 @@ echo
 if [ -f "$SKILL_DST/SKILL.md" ]; then
   echo "  First time? Ask Claude to make your first quiz, e.g. in Claude Code:"
   echo "      \"Quiz me on the Roman Empire\"   (or run /koplay-quiz)"
-else
-  echo "  Tip: run ./start.sh --install-skill (in another terminal) to let Claude make quizzes,"
-  echo "  e.g. \"Quiz me on the Roman Empire\"."
 fi
 echo
 echo "  Display (open on the big screen):  $DISPLAY_URL"
