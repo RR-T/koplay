@@ -27,4 +27,14 @@ function hasRole(user, roleBit) {
   return !!(user && (user.role & roleBit));
 }
 
-module.exports = { findByToken, hasRole, ROLE_INTERACTIVE, ROLE_GENERATE, ROLE_UPLOAD, ROLE_ADMIN };
+// Local-play mode (set by docker-compose.local.yml): there is one implicit owner,
+// no passwords. The tunnel never serves the sensitive API (see apiUser in index.js)
+// and the local port binds to 127.0.0.1 only.
+const LOCAL_MODE = process.env.LOCAL_MODE === '1';
+
+function localUser() {
+  const name = (process.env.LOCAL_USER || 'Host').trim() || 'Host';
+  return { token: null, name, role: ROLE_INTERACTIVE | ROLE_GENERATE | ROLE_UPLOAD | ROLE_ADMIN };
+}
+
+module.exports = { LOCAL_MODE, localUser, findByToken, hasRole, ROLE_INTERACTIVE, ROLE_GENERATE, ROLE_UPLOAD, ROLE_ADMIN };

@@ -31,14 +31,37 @@ function broadcastState(gameCode) {
 }
 rooms.setBroadcast(broadcastState);
 
-// Upload a quiz via JSON — requires ROLE_UPLOAD
-app.post('/api/quiz', (req, res) => {
+// Cloudflare adds these headers to every request that arrives through the tunnel;
+// they cannot be removed by the sender. Local requests never carry them.
+function viaTunnel(req) {
+  return !!(req.headers['cf-ray'] || req.headers['cf-connecting-ip']);
+}
+
+// Resolve the caller for the sensitive API (/api/quiz, /api/screen/push).
+// Local mode: implicit local owner, but never through the tunnel.
+// Otherwise: Bearer token with ROLE_UPLOAD.
+function apiUser(req, res) {
+  if (users.LOCAL_MODE) {
+    if (viaTunnel(req)) {
+      res.status(403).json({ error: 'This API is not available through the public tunnel' });
+      return null;
+    }
+    return users.localUser();
+  }
   const auth = req.headers.authorization || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   const user = users.findByToken(token);
   if (!user || !users.hasRole(user, users.ROLE_UPLOAD)) {
-    return res.status(401).json({ error: 'Invalid token or missing upload permission' });
+    res.status(401).json({ error: 'Invalid token or missing upload permission' });
+    return null;
   }
+  return user;
+}
+
+// Upload a quiz via JSON — requires ROLE_UPLOAD
+app.post('/api/quiz', (req, res) => {
+  const user = apiUser(req, res);
+  if (!user) return;
 
   const { topic, rounds } = req.body || {};
   if (!topic || typeof topic !== 'string' || !topic.trim()) {
@@ -78,12 +101,8 @@ app.post('/api/quiz', (req, res) => {
 
 // Push a quiz to a screen — requires ROLE_UPLOAD and screen ownership
 app.post('/api/screen/push', (req, res) => {
-  const auth = req.headers.authorization || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  const user = users.findByToken(token);
-  if (!user || !users.hasRole(user, users.ROLE_UPLOAD)) {
-    return res.status(401).json({ error: 'Invalid token or missing upload permission' });
-  }
+  const user = apiUser(req, res);
+  if (!user) return;
 
   const { screenUuid, quizId } = req.body || {};
   if (!screenUuid || !quizId) {
@@ -194,7 +213,8 @@ io.on('connection', (socket) => {
         // Physical screen UUID — no user auth, host authenticates separately
         room = rooms.getOrCreate(authToken);
         rooms.attachBroadcast(room);
-        room.session.authUser = null;
+        // Local mode: the display belongs to the local owner, so no host password.
+        room.session.authUser = users.LOCAL_MODE ? users.localUser() : null;
         // Don't clear autoQuizId — a pushed quiz may already be set
       } else if (screenMode === 'manual') {
         // /screen login form — validate as a user with ROLE_INTERACTIVE

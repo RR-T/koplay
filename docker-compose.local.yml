@@ -7,10 +7,13 @@ services:
   app:
     build: .
     ports:
-      - "${LOCAL_PORT:-4747}:3000"
+      # Bind to localhost only: the local API needs no password.
+      - "127.0.0.1:${LOCAL_PORT:-4747}:3000"
     restart: "no"
     env_file:
       - .env.local
+    environment:
+      LOCAL_MODE: "1"
     volumes:
       - ./server/data:/app/server/data
 
