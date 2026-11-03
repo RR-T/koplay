@@ -1,7 +1,7 @@
 <div align="center">
   <img src="public/tv/icon.png" alt="KoPlay Logo" width="120" />
   <h1>KoPlay</h1>
-  <p><strong>JackBox-style party games for Samsung TV + phone controllers</strong></p>
+  <p><strong>JackBox-style party games for a shared screen + phone controllers</strong></p>
 
   ![Node.js](https://img.shields.io/badge/Node.js-22.x-339933?logo=node.js&logoColor=white)
   ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
@@ -16,15 +16,15 @@
 
 ## Overview
 
-KoPlay is a local-network party game system built to run on a **Raspberry Pi**. A **Samsung TV** displays the game and a shareable **QR code** — players join by scanning it on their phones. No apps, no accounts, no room codes. One game at a time, everyone on the same LAN.
+KoPlay is a local-network party game system. Any monitor with a web browser shows the game and a shareable **QR code** — players join by scanning it on their phones. Everyone just needs to reach the server over the network.
 
 ```
 ┌──────────────────────┐        WebSocket (Socket.IO)
-│   Samsung TV (Tizen) │ ◄─────────────────────────────┐
-└──────────────────────┘                               │
-                                                ┌──────┴──────┐
-┌──────────────────────┐                        │ Raspberry Pi │
-│  Player Phone (any)  │ ◄─────────────────────►│  (Node.js)   │
+│  Display (monitor +  │ ◄─────────────────────────────┐
+│  browser)            │                               │
+└──────────────────────┘                        ┌──────┴──────┐
+┌──────────────────────┐                        │   Server    │
+│  Player Phone (any)  │ ◄─────────────────────►│  (Node.js)  │
 └──────────────────────┘                        └─────────────┘
 ```
 
@@ -44,7 +44,7 @@ KoPlay is a local-network party game system built to run on a **Raspberry Pi**. 
 docker compose up --build
 ```
 
-Then open `http://<pi-ip>:3000/tv` on the TV and `http://<pi-ip>:3000` on phones.
+Then open `http://<server-ip>:3000/tv` on the display and `http://<server-ip>:3000` on phones.
 
 ### Option 2 — Native Node.js
 
@@ -116,11 +116,11 @@ tv_games/
 │       └── trivia.js
 ├── client/
 │   └── src/
-│       ├── tv/             # TV display app (Samsung Tizen 5 / Chrome 63)
+│       ├── tv/             # Display app (shared screen)
 │       ├── phone/          # Phone controller app
 │       ├── games/          # Lazy-loaded game components
 │       └── shared/         # Socket context, hooks, shared components
-└── public/                 # Static assets (legacy TV build)
+└── public/                 # Static assets
 ```
 
 ### How state flows
@@ -150,16 +150,9 @@ Player action → socket event → sessionManager → game.handleAction()
 
 Games are code-split and only fetched when selected.
 
-## TV Compatibility
+## Browser Compatibility
 
-The TV client targets **Samsung Tizen 5.0** (Chrome 63). Avoid these CSS features in TV-facing components:
-
-- `oklch()` / `color-mix()` — use hex instead
-- `padding-inline` / `margin-block` — use physical properties
-- `gap` on **flex** containers — use `space-x-*` / `space-y-*`
-- `aspect-ratio`, `clamp()`, `min()`, `max()`
-
-The Vite build plugin auto-patches Tailwind output for Chrome 63 compatibility.
+The display and phone apps target modern evergreen browsers (Chrome, Firefox, Safari, Edge).
 
 ## License
 
