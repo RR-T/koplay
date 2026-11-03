@@ -88,6 +88,21 @@ $COMPOSE pull tunnel
 $COMPOSE build app
 say "Images ready."
 
+# --- Claude Code skill ---------------------------------------------------
+SKILL_SRC="skills/koplay-quiz/SKILL.md"
+SKILL_DST="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}/koplay-quiz"
+if [ -f "$SKILL_SRC" ]; then
+  say
+  say "KoPlay has a Claude Code skill: ask Claude to \"quiz me on <anything>\" and it writes"
+  say "the quiz and puts it on your screen. It only talks to localhost."
+  if yesno "Install it to $SKILL_DST?" Y; then
+    mkdir -p "$SKILL_DST"
+    esc="$(printf '%s' "$PWD" | sed -e 's/[\\|&]/\\&/g')"
+    sed "s|__KOPLAY_DIR__|$esc|g" "$SKILL_SRC" > "$SKILL_DST/SKILL.md"
+    say "Installed. In Claude Code, say \"quiz me on ...\" or run /koplay-quiz."
+  fi
+fi
+
 # --- Launch --------------------------------------------------------------
 say
 if yesno "Launch the screen now?" Y; then

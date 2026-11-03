@@ -30,6 +30,8 @@ cd tv_games
 
 `setup.sh` asks a few questions (your name and the port), writes `.env.local`, prepares the Docker images, then offers to launch. AI quiz generation is optional: add `GEMINI_API_KEY=...` to `.env.local` to enable it. Next time just run `./start.sh` (or `npm run play`).
 
+`setup.sh` can also install a Claude Code skill: with KoPlay running, ask Claude to "quiz me on <anything>" (or run `/koplay-quiz`) and it writes the quiz and puts it on your screen. It only talks to `localhost`, so quiz content never leaves your machine apart from what Claude itself processes.
+
 Launching starts the app plus a [Cloudflare quick tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/) (no account needed), opens the display on its public URL and prints the link for phones, which can be on any network. Phones scan the QR code (or enter the 5-letter game code shown on the screen) and type a name; the first to join becomes host. There are no passwords in local play. Ctrl+C stops everything. The tunnel only serves the game itself: the upload API is refused through it and is available only on `localhost`. Anyone with the tunnel URL and a live game code can join, and the first to join hosts.
 
 ## Other ways to run

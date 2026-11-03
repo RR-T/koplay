@@ -53,7 +53,7 @@ curl -X POST http://localhost:4747/api/quiz \
          "choices":["Venus","Mars","Jupiter","Mercury"],"answer":1}]}]}'
 ```
 
-Each question needs `question`, exactly four `choices`, and an `answer` index (0-3). `image` (an http(s) URL) is optional. The `/quiz-me` Claude Code command does this for you.
+Each question needs `question`, exactly four `choices`, and an `answer` index (0-3). `image` (an http(s) URL) is optional. The `koplay-quiz` Claude Code skill (`skills/koplay-quiz/`, installed by `setup.sh` into `~/.claude/skills`) does this for you: it generates the quiz, uploads it to your local server and pushes it to your screen.
 
 ## Push a quiz to a screen
 
