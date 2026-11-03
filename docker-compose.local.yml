@@ -2,7 +2,7 @@
 # Use ./start.sh: it checks Docker, starts this stack, and opens the display on the
 # public tunnel URL. Optional settings (GEMINI_API_KEY, LOCAL_PORT, LOCAL_USER) come
 # from your environment or a .env file next to this one.
-name: tv-games-local
+name: koplay-local
 
 services:
   app:

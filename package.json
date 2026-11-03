@@ -1,5 +1,5 @@
 {
-  "name": "tv-party-games",
+  "name": "koplay",
   "version": "2.0.0",
   "description": "JackBox-style party games for Samsung TV + phone controllers",
   "main": "server/index.js",
