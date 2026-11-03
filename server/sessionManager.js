@@ -9,6 +9,8 @@ class SessionManager {
     this.players = new Map();
     this.currentGame = null;
     this.gameState = null;
+    this._private = null;
+    this.authUser = null;
   }
 
   addPlayer(id, name, avatarId, noiseId) {
@@ -51,6 +53,8 @@ class SessionManager {
       this.hostId = null;
       this.currentGame = null;
       this.gameState = null;
+      this._private = null;
+      this.authUser = null;
     }
   }
 
@@ -84,8 +88,10 @@ class SessionManager {
       takenNoises,
       currentGame: this.currentGame,
       gameState: this.gameState,
+      hostAuthenticated: !!this.authUser,
+      hostAuthName: this.authUser ? this.authUser.name : null,
     };
   }
 }
 
-module.exports = new SessionManager();
+module.exports = SessionManager;
