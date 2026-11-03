@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-JackBox-style party game system for Samsung TV + phone controllers. A TV displays the game, players join via phones by scanning a QR code. Runs on a Raspberry Pi on the LAN. Single session model — no room codes, one game at a time, all state in-memory.
+JackBox-style party game system for a shared screen + phone controllers. Any monitor with a browser displays the game, and players join via phones by scanning a QR code. Runs on any machine that can run Node.js or Docker. Single session model — no room codes, one game at a time, all state in-memory.
 
 ## Commands
 
@@ -27,10 +27,10 @@ JackBox-style party game system for Samsung TV + phone controllers. A TV display
 
 Two separate React apps built by Vite with shared code:
 
-- `client/src/tv/` — TV display app (`/tv`). Screens: intro video, waiting (QR code), lobby (player list), playing (lazy-loaded game component).
+- `client/src/tv/` — Display app (`/tv`). Screens: intro video, waiting (QR code), lobby (player list), playing (lazy-loaded game component).
 - `client/src/phone/` — Phone controller app (`/phone`, also served at `/`). Screens: join form, waiting, lobby-host (game selector), lobby-player, playing (lazy-loaded game component).
 - `client/src/shared/` — Shared React context (SocketContext), hooks (useTimer), and components (Timer, PlayerList, Scoreboard, Rankings, PlayAgainButton, ConfettiCanvas, QRCodeCanvas).
-- `client/src/games/` — Game modules. Each game has a directory with `index.js` (metadata + lazy imports), a TV component, and a Phone component. Registry in `registry.js`.
+- `client/src/games/` — Game modules. Each game has a directory with `index.js` (metadata + lazy imports), a display (TV) component, and a Phone component. Registry in `registry.js`.
 
 ### Adding a New Game
 
@@ -75,4 +75,4 @@ Mozilla/5.0 (SMART-TV; Linux; Tizen 5.0) AppleWebKit/537.36 (KHTML, like Gecko) 
 
 ### Communication Pattern
 
-All state flows through a single `session:state` broadcast. Every server-side mutation (player join/leave, game select, game action) ends with `broadcastState()` which emits the full session state to all connected clients. Clients are purely reactive — they render based on the state they receive. The TV connects with `query: { role: 'tv' }`, phones with `query: { role: 'player' }`.
+All state flows through a single `session:state` broadcast. Every server-side mutation (player join/leave, game select, game action) ends with `broadcastState()` which emits the full session state to all connected clients. Clients are purely reactive — they render based on the state they receive. The display connects with `query: { role: 'tv' }`, phones with `query: { role: 'player' }`.
