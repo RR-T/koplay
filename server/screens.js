@@ -1,3 +1,5 @@
+const users = require('./users');
+
 function load() {
   try {
     const raw = process.env.SCREENS;
@@ -10,8 +12,15 @@ function load() {
   }
 }
 
+// Local play (LOCAL_MODE) has exactly one screen, at /screen/local, owned by the
+// local user, so no SCREENS configuration is needed.
+const LOCAL_SCREEN_ID = 'local';
+
 function findByUuid(uuid) {
   if (!uuid) return null;
+  if (users.LOCAL_MODE && uuid === LOCAL_SCREEN_ID) {
+    return { uuid, label: 'Local screen', owners: [users.localUser().name] };
+  }
   const map = load();
   const entry = map[uuid];
   if (!entry || typeof entry.label !== 'string') return null;

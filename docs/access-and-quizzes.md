@@ -4,7 +4,7 @@
 
 `docker-compose.local.yml` sets `LOCAL_MODE=1`. In this mode there are no passwords:
 
-- the display at `/screen/<id>` belongs to the local owner (`LOCAL_USER`, the name saved quizzes are filed under), so the first phone to join is host without entering anything;
+- the display at `/screen/local` (the only screen in local mode, no `SCREENS` needed) belongs to the local owner (`LOCAL_USER`, the name saved quizzes are filed under), so the first phone to join is host without entering anything;
 - `POST /api/quiz` and `POST /api/screen/push` need no token, but are refused (403) when a request arrives through the Cloudflare tunnel, and the port is bound to `127.0.0.1`, so only programs on your own machine can use them.
 
 The sections below describe the password-based setup used by a normal server deployment (without `LOCAL_MODE`).
@@ -53,7 +53,7 @@ curl -X POST http://localhost:4747/api/quiz \
          "choices":["Venus","Mars","Jupiter","Mercury"],"answer":1}]}]}'
 ```
 
-Each question needs `question`, exactly four `choices`, and an `answer` index (0-3). `image` (an http(s) URL) is optional. The `koplay-quiz` Claude Code skill (`skills/koplay-quiz/`, installed by `setup.sh` into `~/.claude/skills`) does this for you: it generates the quiz, uploads it to your local server and pushes it to your screen.
+Each question needs `question`, exactly four `choices`, and an `answer` index (0-3). `image` (an http(s) URL) is optional. The `koplay-quiz` Claude Code skill (`skills/koplay-quiz/`, installed by `./start.sh --install-skill` into `~/.claude/skills`) does this for you: it generates the quiz, uploads it to your local server and pushes it to your screen.
 
 ## Push a quiz to a screen
 
