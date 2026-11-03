@@ -28,7 +28,7 @@ cd tv_games
 ./setup.sh
 ```
 
-`setup.sh` asks a few questions (your name, a host access code, an optional Gemini key, the port), writes `.env.local`, prepares the Docker images, then offers to launch. Next time just run `./start.sh` (or `npm run play`).
+`setup.sh` asks a few questions (your name, a host access code, the port), writes `.env.local`, prepares the Docker images, then offers to launch. AI quiz generation is optional: add `GEMINI_API_KEY=...` to `.env.local` to enable it. Next time just run `./start.sh` (or `npm run play`).
 
 Launching starts the app plus a [Cloudflare quick tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/) (no account needed), opens the display on its public URL and prints the link for phones, which can be on any network. The first player to join enters the host code and becomes host. Ctrl+C stops everything. Anyone with the tunnel URL can reach the game while it runs.
 

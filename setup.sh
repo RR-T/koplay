@@ -68,16 +68,6 @@ if [ -z "${SKIP_CONFIG:-}" ]; then
   done
 
   say
-  say "AI quiz generation is optional. Without a Gemini API key you can still play saved"
-  say "quizzes and upload your own as JSON (see docs/access-and-quizzes.md)."
-  GEMINI_KEY=""
-  if yesno "Enable AI quiz generation with a Gemini API key?" N; then
-    say "  Get a key at https://aistudio.google.com/apikey"
-    read -rs -p "  Paste your Gemini API key (input hidden, Enter to skip): " GEMINI_KEY || true
-    say
-  fi
-
-  say
   while :; do
     ask "Local port" "${LOCAL_PORT:-3000}"
     PORT_LOCAL="$REPLY_VAL"
@@ -92,8 +82,7 @@ if [ -z "${SKIP_CONFIG:-}" ]; then
 USERS='{"$CODE":{"name":"$HOST_NAME","role":15}}'
 SCREENS='{"$SCREEN":{"label":"Local screen","owners":["$HOST_NAME"]}}'
 LOCAL_PORT=$PORT_LOCAL
-# Optional: enables AI quiz generation.
-GEMINI_API_KEY=$GEMINI_KEY
+# Optional: add GEMINI_API_KEY=... to enable AI quiz generation (see docs/access-and-quizzes.md).
 ENV
   say
   say "Wrote $ENV_FILE"
