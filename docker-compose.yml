@@ -3,7 +3,7 @@ services:
     build: .
     expose:
       - 3000
-    hostname: tv-games
+    hostname: koplay
     restart: no
     env_file:
       - .env
