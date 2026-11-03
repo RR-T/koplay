@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-JackBox-style party game system for a shared screen + phone controllers. Any monitor with a browser displays the game, and players join via phones by scanning a QR code. Runs on any machine that can run Node.js or Docker. Single session model — no room codes, one game at a time, all state in-memory.
+JackBox-style party game system for a shared screen + phone controllers. Any monitor with a browser displays the game, and players join via phones by scanning a QR code. Runs on any machine that can run Node.js or Docker. One room per screen (each with its own 5-letter join code and session), one game at a time per room, all state in-memory. See `server/rooms.js`.
 
 ## Commands
 
