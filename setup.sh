@@ -69,7 +69,7 @@ if [ -z "${SKIP_CONFIG:-}" ]; then
 
   say
   while :; do
-    ask "Local port" "${LOCAL_PORT:-3000}"
+    ask "Local port" "${LOCAL_PORT:-4747}"
     PORT_LOCAL="$REPLY_VAL"
     case "$PORT_LOCAL" in ''|*[!0-9]*) say "  Enter a number." ;; *) [ "$PORT_LOCAL" -ge 1 ] && [ "$PORT_LOCAL" -le 65535 ] && break; say "  Enter a port from 1 to 65535." ;; esac
   done

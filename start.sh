@@ -29,7 +29,7 @@ ENV
 fi
 
 if [ -z "${LOCAL_PORT:-}" ]; then LOCAL_PORT="$(sed -n 's/^LOCAL_PORT=\([0-9]*\).*/\1/p' .env.local | head -1)"; fi
-export LOCAL_PORT="${LOCAL_PORT:-3000}"
+export LOCAL_PORT="${LOCAL_PORT:-4747}"
 PORT_LOCAL="$LOCAL_PORT"
 
 CODE="$(sed -n "s/^USERS='{\"\([^\"]*\)\".*/\1/p" .env.local)"
