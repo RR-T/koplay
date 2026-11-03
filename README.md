@@ -25,14 +25,14 @@ Needs [Docker](https://docs.docker.com/get-docker/) on Linux or macOS (Windows: 
 ```bash
 git clone https://github.com/alexanderbailey/tv_games.git
 cd tv_games
-./setup.sh
+./start.sh        # or: npm run play
 ```
 
-`setup.sh` writes `.env.local`, prepares the Docker images, offers to install the Claude skill, then offers to launch. AI quiz generation is optional: add `GEMINI_API_KEY=...` to `.env.local` to enable it. Next time just run `./start.sh` (or `npm run play`).
+`start.sh` checks Docker, builds and starts everything, and prints the links. There's nothing to configure. Optional settings go in your environment or a `.env` file here: `GEMINI_API_KEY` (AI quiz generation) and `LOCAL_PORT` (default `4747`).
 
-Make your first quiz with the Claude Code skill that `setup.sh` offers to install: with KoPlay running, ask Claude something like *"Quiz me on the Roman Empire"* (or run `/koplay-quiz`) and it writes the quiz and puts it on your screen. It only talks to `localhost`, so quiz content never leaves your machine apart from what Claude itself processes.
+Make your first quiz with the Claude Code skill: run `./start.sh --install-skill` once, then, with KoPlay running, ask Claude something like *"Quiz me on the Roman Empire"* (or run `/koplay-quiz`) and it writes the quiz and puts it on your screen. It only talks to `localhost`, so quiz content never leaves your machine apart from what Claude itself processes.
 
-Launching starts the app plus a [Cloudflare quick tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/) (no account needed), opens the display on its public URL and prints the link for phones, which can be on any network. Phones scan the QR code (or enter the 5-letter game code shown on the screen) and type a name; the first to join becomes host. There are no passwords in local play. Ctrl+C stops everything. Saved quizzes live in `server/data/` on your machine (not in git), so they survive restarts and rebuilds; deleting that folder deletes them. The tunnel only serves the game itself: the upload API is refused through it and is available only on `localhost`. Anyone with the tunnel URL and a live game code can join, and the first to join hosts.
+`start.sh` starts the app plus a [Cloudflare quick tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/) (no account needed), opens the display on its public URL and prints the link for phones, which can be on any network. Phones scan the QR code (or enter the 5-letter game code shown on the screen) and type a name; the first to join becomes host. There are no passwords in local play. Ctrl+C stops everything. Saved quizzes live in `server/data/` on your machine (not in git), so they survive restarts and rebuilds; deleting that folder deletes them. The tunnel only serves the game itself: the upload API is refused through it and is available only on `localhost`. Anyone with the tunnel URL and a live game code can join, and the first to join hosts.
 
 ## Other ways to run
 
@@ -46,7 +46,7 @@ Display: `/screen` (log in with an access code) or `/screen/<screen-id>`. Phones
 
 ## Configuration
 
-Set in `.env` (see `.env.example`); `setup.sh` writes its own `.env.local` for local play.
+Set in `.env` (see `.env.example`). Local play (`./start.sh`) needs none of these.
 
 | Variable | Description |
 |----------|-------------|

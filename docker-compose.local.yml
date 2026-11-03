@@ -1,6 +1,7 @@
 # Run KoPlay on your own computer and let phones join from anywhere.
-# Use start.sh (Mac/Linux) or start.bat (Windows) — they generate .env.local,
-# start this stack, and open the display on the public tunnel URL.
+# Use ./start.sh: it checks Docker, starts this stack, and opens the display on the
+# public tunnel URL. Optional settings (GEMINI_API_KEY, LOCAL_PORT, LOCAL_USER) come
+# from your environment or a .env file next to this one.
 name: tv-games-local
 
 services:
@@ -10,10 +11,10 @@ services:
       # Bind to localhost only: the local API needs no password.
       - "127.0.0.1:${LOCAL_PORT:-4747}:3000"
     restart: "no"
-    env_file:
-      - .env.local
     environment:
       LOCAL_MODE: "1"
+      LOCAL_USER: "${LOCAL_USER:-Host}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
     volumes:
       - ./server/data:/app/server/data
 

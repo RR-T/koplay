@@ -36,8 +36,7 @@ Use exactly this JSON structure (raw object, no markdown fences):
 
 ```bash
 KOPLAY_DIR="__KOPLAY_DIR__"
-PORT=$(sed -n 's/^LOCAL_PORT=\([0-9]*\).*/\1/p' "$KOPLAY_DIR/.env.local" 2>/dev/null | head -1); PORT=${PORT:-4747}
-SCREEN=$(sed -n "s/^SCREENS='{\"\([^\"]*\)\".*/\1/p" "$KOPLAY_DIR/.env.local" 2>/dev/null)
+PORT=${LOCAL_PORT:-$(sed -n 's/^LOCAL_PORT=\([0-9]*\).*/\1/p' "$KOPLAY_DIR/.env" 2>/dev/null | head -1)}; PORT=${PORT:-4747}
 curl -fs -o /dev/null "http://localhost:$PORT/" && echo "running on $PORT" || echo "NOT RUNNING"
 ```
 
@@ -57,17 +56,13 @@ No token is needed. Parse the `id` from the response. If it contains an `error`,
 
 ## Step 4: Send it to the screen
 
-If `$SCREEN` is non-empty:
-
 ```bash
 curl -s -X POST "http://localhost:$PORT/api/screen/push" \
   -H "Content-Type: application/json" \
-  -d "{\"screenUuid\": \"$SCREEN\", \"quizId\": \"<id>\"}"
+  -d "{\"screenUuid\": \"local\", \"quizId\": \"<id>\"}"
 ```
 
 If the response contains an `error`, report it. Otherwise it returns `gameCode` and `topic`.
-
-If `$SCREEN` is empty, skip this step and tell the user the quiz was added to their library; the host can pick it from the quiz list.
 
 ## Step 5: Tell the user
 
