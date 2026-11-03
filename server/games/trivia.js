@@ -78,7 +78,7 @@ Use this exact structure:
   ]
 }
 Rules:
-- Exactly 10 questions per round (30 total)
+- Exactly 5 questions per round (15 total)
 - Exactly 4 choices per question
 - "answer" is the 0-based index of the correct choice (0, 1, 2, or 3)
 - Easy questions should be general knowledge, Medium moderately challenging, Hard quite difficult

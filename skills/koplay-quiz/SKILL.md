@@ -11,7 +11,7 @@ KoPlay is installed at `__KOPLAY_DIR__`.
 
 ## Step 1: Generate the quiz
 
-Create a trivia quiz with exactly 3 rounds (Easy, Medium, Hard) of 10 questions each (30 total), unless the user asks for a different number of questions or rounds.
+Create a trivia quiz with exactly 3 rounds (Easy, Medium, Hard) of 5 questions each (15 total), unless the user asks for a different number of questions or rounds.
 
 Rules:
 - Each question has exactly 4 `choices` (strings) and an `answer` (0-based index of the correct choice, 0 to 3)
