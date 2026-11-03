@@ -21,7 +21,7 @@ export default function JoinScreen({ onJoin, error, requireAuth }) {
               type="password"
               value={accessCode}
               onChange={(e) => setAccessCode(e.target.value)}
-              placeholder="Access code"
+              placeholder="Host password"
               autoFocus
               className="w-full px-4 py-3 bg-surface-light border border-muted/30 rounded-lg text-center text-lg text-white placeholder-muted focus:border-accent focus:outline-none"
             />

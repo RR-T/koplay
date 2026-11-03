@@ -28,9 +28,9 @@ cd tv_games
 ./setup.sh
 ```
 
-`setup.sh` asks a few questions (your name, a host access code, the port), writes `.env.local`, prepares the Docker images, then offers to launch. AI quiz generation is optional: add `GEMINI_API_KEY=...` to `.env.local` to enable it. Next time just run `./start.sh` (or `npm run play`).
+`setup.sh` asks a few questions (your name and the port), writes `.env.local`, prepares the Docker images, then offers to launch. AI quiz generation is optional: add `GEMINI_API_KEY=...` to `.env.local` to enable it. Next time just run `./start.sh` (or `npm run play`).
 
-Launching starts the app plus a [Cloudflare quick tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/) (no account needed), opens the display on its public URL and prints the link for phones, which can be on any network. The first player to join enters the host code and becomes host. Ctrl+C stops everything. Anyone with the tunnel URL can reach the game while it runs.
+Launching starts the app plus a [Cloudflare quick tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/) (no account needed), opens the display on its public URL and prints the link for phones, which can be on any network. Phones scan the QR code (or enter the 5-letter game code shown on the screen) and type a name; the first to join becomes host. There are no passwords in local play. Ctrl+C stops everything. The tunnel only serves the game itself: the upload API is refused through it and is available only on `localhost`. Anyone with the tunnel URL and a live game code can join, and the first to join hosts.
 
 ## Other ways to run
 
@@ -40,7 +40,7 @@ npm run build && npm start     # without Docker, Node 18+ (run npm install in . 
 npm run dev:server             # development: + npm run dev:client for Vite HMR on :5173
 ```
 
-Display: `/screen` (log in with an access code) or `/screen/<screen-id>`. Phones: `/`.
+Display: `/screen` (log in with an access code) or `/screen/<screen-id>`. Phones: `/`. The 5-letter game code on the display is per game; access codes are server passwords set in `USERS`.
 
 ## Configuration
 
