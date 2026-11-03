@@ -23,8 +23,8 @@ KoPlay is a JackBox-style party game system. Any monitor with a web browser show
 Needs [Docker](https://docs.docker.com/get-docker/) on Linux or macOS (Windows: use WSL).
 
 ```bash
-git clone https://github.com/alexanderbailey/tv_games.git
-cd tv_games
+git clone https://github.com/alexanderbailey/koplay.git
+cd koplay
 ./start.sh        # or: npm run play
 ```
 
