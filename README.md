@@ -53,7 +53,7 @@ Set in `.env` (see `.env.example`); `setup.sh` writes its own `.env.local` for l
 | `GEMINI_API_KEY` | Optional. Enables AI quiz generation; without it only saved or uploaded quizzes are available |
 | `GEMINI_MODEL` | Optional. Defaults to `gemini-2.5-flash` |
 | `PORT` | Server port, default `3000` |
-| `LOCAL_PORT` | Host port for local play (`.env.local`), default `3000` |
+| `LOCAL_PORT` | Host port for local play (`.env.local`), default `4747` |
 
 ## More
 

@@ -33,10 +33,10 @@ Quizzes persist to `server/data/quizzes.json`. Users see and delete their own qu
 
 ## Upload a quiz (no Gemini needed)
 
-Requires the upload role:
+Requires the upload role (the example uses the local-play port, 4747):
 
 ```bash
-curl -X POST http://localhost:3000/api/quiz \
+curl -X POST http://localhost:4747/api/quiz \
   -H "Authorization: Bearer <access-code>" \
   -H "Content-Type: application/json" \
   -d '{"topic":"Space","rounds":[{"name":"Easy","questions":[
