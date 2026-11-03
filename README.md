@@ -73,27 +73,26 @@ npm run dev:client   # Vite HMR on :5173 (proxies Socket.IO to :3000)
 
 ## Play from your computer (one command)
 
-Run KoPlay on your own laptop, show the game on the same machine, and let phones join from **anywhere** — they don't need to be on your Wi-Fi. The only prerequisite is [Docker](https://docs.docker.com/get-docker/).
+Run KoPlay on your own laptop, show the game on the same machine, and let phones join from **anywhere** — they don't need to be on your Wi-Fi. The only prerequisite is [Docker](https://docs.docker.com/get-docker/) (works on Linux and macOS; Windows users can run it under WSL).
 
 ```bash
 ./start.sh        # macOS / Linux  (or: npm run play)
-start.bat         # Windows (double-click)
 ```
 
 The script:
 
-1. creates a private `.env.local` on first run (random host access code + screen ID; add `GEMINI_API_KEY=` there to enable quiz generation),
+1. creates a private `.env.local` on first run (random host access code + screen ID; optionally add `GEMINI_API_KEY=` there to enable AI quiz generation),
 2. starts the app and a [Cloudflare quick tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/) via `docker-compose.local.yml` — no account, domain or router changes needed,
 3. prints a public `https://….trycloudflare.com` URL and opens the display in your browser on it, so the on-screen QR code works for phones anywhere.
 
-The first player to join types the printed **host access code** and becomes host. Press Ctrl+C (or any key on Windows) to stop everything. The tunnel URL changes on every run, and anyone with it can reach the game while it is running. Set `LOCAL_PORT` to use a port other than 3000.
+The first player to join types the printed **host access code** and becomes host. Press Ctrl+C to stop everything. The tunnel URL changes on every run, and anyone with it can reach the game while it is running. Set `LOCAL_PORT` to use a port other than 3000.
 
 ## Configuration
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | `3000` | HTTP/WebSocket server port |
-| `GEMINI_API_KEY` | — | Required to generate new trivia quizzes |
+| `GEMINI_API_KEY` | — | **Optional.** Enables AI trivia quiz generation. Without it, players can only pick existing quizzes |
 | `GEMINI_MODEL` | `gemini-2.5-flash` | Gemini model to use for quiz generation |
 | `QUIZ_USERS` | `{}` | JSON map of `{password: username}` — only listed users can generate or delete trivia quizzes |
 
@@ -101,7 +100,9 @@ Create a `.env` file in the project root to override defaults. See `.env.example
 
 ## Trivia Quiz Library
 
-Trivia is split into two flows so that exposing the app to the internet doesn't let strangers burn through your Gemini quota:
+Trivia quizzes come from a persistent library. AI generation is **optional**: with no `GEMINI_API_KEY` the "Generate new quiz" option is hidden and hosts can only pick existing quizzes. You can still add quizzes without Gemini by uploading JSON (see below), for example from a local coding agent.
+
+The library is split into two flows so that exposing the app to the internet doesn't let strangers burn through your Gemini quota:
 
 - **Load a saved quiz** — any host can pick a previously-generated quiz from the library. Open to all.
 - **Generate a new quiz** — the host enters a password; the server looks it up in `QUIZ_USERS` to identify them, calls Gemini, and saves the result to the library tagged with their username. Only the creator (or someone using the same password) can later delete one of their own quizzes.
@@ -115,6 +116,21 @@ QUIZ_USERS={"hunter2":"alex","correcthorse":"sam"}
 ```
 
 > **Note:** Passwords travel in plaintext over the socket. Fine on HTTPS, sniffable on plain HTTP — terminate TLS (Caddy / Cloudflare Tunnel / Tailscale Funnel) if exposing publicly.
+
+### Uploading quizzes as JSON (no Gemini needed)
+
+Any user with the upload role (`role & 4`, which the generated local host code has) can add a quiz directly:
+
+```bash
+curl -X POST http://localhost:3000/api/quiz \
+  -H "Authorization: Bearer <access-code>" \
+  -H "Content-Type: application/json" \
+  -d '{"topic":"Space","rounds":[{"name":"Easy","questions":[
+        {"question":"Which planet is known as the Red Planet?",
+         "choices":["Venus","Mars","Jupiter","Mercury"],"answer":1}]}]}'
+```
+
+Each question needs a `question`, exactly 4 `choices`, and an `answer` index (0–3); `image` (an http(s) URL) is optional. The `/quiz-me` Claude Code command does this for you.
 
 ## Architecture
 
