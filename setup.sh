@@ -59,13 +59,6 @@ if [ -z "${SKIP_CONFIG:-}" ]; then
     HOST_NAME="$REPLY_VAL"; valid "$HOST_NAME" && break; say "  Use only letters, numbers, - and _."
   done
 
-  say
-  while :; do
-    ask "Local port" "${LOCAL_PORT:-4747}"
-    PORT_LOCAL="$REPLY_VAL"
-    case "$PORT_LOCAL" in ''|*[!0-9]*) say "  Enter a number." ;; *) [ "$PORT_LOCAL" -ge 1 ] && [ "$PORT_LOCAL" -le 65535 ] && break; say "  Enter a port from 1 to 65535." ;; esac
-  done
-
   SCREEN="$(rand_hex 16)"
   umask 077
   cat > "$ENV_FILE" <<ENV
@@ -74,7 +67,6 @@ if [ -z "${SKIP_CONFIG:-}" ]; then
 # tunnel never serves the upload API. LOCAL_USER is the owner name on saved quizzes.
 LOCAL_USER=$HOST_NAME
 SCREENS='{"$SCREEN":{"label":"Local screen","owners":["$HOST_NAME"]}}'
-LOCAL_PORT=$PORT_LOCAL
 # Optional: add GEMINI_API_KEY=... to enable AI quiz generation (see docs/access-and-quizzes.md).
 ENV
   say
@@ -87,6 +79,21 @@ say "Preparing Docker images (the Cloudflare tunnel needs no separate install; i
 $COMPOSE pull tunnel
 $COMPOSE build app
 say "Images ready."
+
+# --- Claude Code skill ---------------------------------------------------
+SKILL_SRC="skills/koplay-quiz/SKILL.md"
+SKILL_DST="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}/koplay-quiz"
+if [ -f "$SKILL_SRC" ]; then
+  say
+  say "KoPlay has a Claude Code skill: ask Claude to \"quiz me on <anything>\" and it writes"
+  say "the quiz and puts it on your screen. It only talks to localhost."
+  if yesno "Install it to $SKILL_DST?" Y; then
+    mkdir -p "$SKILL_DST"
+    esc="$(printf '%s' "$PWD" | sed -e 's/[\\|&]/\\&/g')"
+    sed "s|__KOPLAY_DIR__|$esc|g" "$SKILL_SRC" > "$SKILL_DST/SKILL.md"
+    say "Installed. In Claude Code, say \"quiz me on ...\" or run /koplay-quiz."
+  fi
+fi
 
 # --- Launch --------------------------------------------------------------
 say

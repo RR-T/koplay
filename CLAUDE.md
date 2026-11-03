@@ -13,6 +13,7 @@ JackBox-style party game system for a shared screen + phone controllers. Any mon
 - **Dev mode:** Run `npm run dev:server` and `npm run dev:client` in separate terminals. Vite dev server on port 5173 proxies Socket.IO to port 3000.
 - **Install deps:** `npm install` (server) and `cd client && npm install` (client)
 - **Docker:** `docker compose up --build`
+- **Quiz skill:** `skills/koplay-quiz/SKILL.md` is a template (`__KOPLAY_DIR__` placeholder) that `setup.sh` installs to `~/.claude/skills/koplay-quiz`. It writes a quiz, `POST`s it to `localhost:$LOCAL_PORT/api/quiz` and pushes it to the local screen. Localhost only; it must never target a remote host.
 - **Gemini is optional:** without `GEMINI_API_KEY`, trivia hides AI generation (`canGenerate` in `server/games/trivia.js`) and only saved quizzes can be picked; `POST /api/quiz` (upload role) works regardless.
 - **Local play (laptop + public tunnel):** `./setup.sh` (interactive: writes `.env.local`, pulls images, offers to launch) then `./start.sh`. Local play runs with `LOCAL_MODE=1`: no passwords, the sensitive API (`/api/quiz`, `/api/screen/push`) is refused via the tunnel (Cloudflare `cf-ray`/`cf-connecting-ip` headers) and the port binds to 127.0.0.1 (or `npm run play`; Linux/macOS) — uses `docker-compose.local.yml` (own project name `tv-games-local`, publishes `LOCAL_PORT`, runs a Cloudflare quick tunnel) and a generated gitignored `.env.local`. The production `docker-compose.yml` is separate (Caddy network, `restart: no`).
 
