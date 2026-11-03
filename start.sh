@@ -57,6 +57,13 @@ done
 
 DISPLAY_URL="$URL/screen/$SCREEN"
 echo
+if [ -f "${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}/koplay-quiz/SKILL.md" ]; then
+  echo "  First time? Ask Claude to make your first quiz, e.g. in Claude Code:"
+  echo "      \"Quiz me on the Roman Empire\"   (or run /koplay-quiz)"
+else
+  echo "  Tip: run ./setup.sh to install the Claude skill, then ask Claude e.g."
+  echo "      \"Quiz me on the Roman Empire\"  to generate quizzes for your screen."
+fi
 echo "  Display (open on the big screen):  $DISPLAY_URL"
 echo "  Phones join at:                    $URL"
 echo "  Local API (no password, localhost only): http://localhost:$PORT_LOCAL/api/quiz"
