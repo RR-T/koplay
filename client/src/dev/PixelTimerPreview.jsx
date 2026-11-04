@@ -35,16 +35,11 @@ function QuestionPhaseMock({ dialStyle, countdownProps }) {
         boxShadow: '0 0 0 2px rgba(255,255,255,0.15)',
       }}
     >
-      {/* Top row: round meta + timer in free corner */}
-      <div className="flex items-start" style={{ marginBottom: 16 }}>
-        <div
-          className="flex items-center text-white/70 text-lg bg-black/40 rounded-xl"
-          style={{ padding: '8px 16px' }}
-        >
-          <span>Medium · Q2/5</span>
-        </div>
-        <div style={{ flex: 1 }} />
-        <PixelCountdown {...countdownProps} style={dialStyle} />
+      <div
+        className="flex items-center text-white/70 text-lg bg-black/40 rounded-xl"
+        style={{ padding: '8px 16px', marginBottom: 16, alignSelf: 'flex-start' }}
+      >
+        <span>Medium · Q2/5</span>
       </div>
 
       <div
@@ -73,6 +68,19 @@ function QuestionPhaseMock({ dialStyle, countdownProps }) {
             <span>{choice}</span>
           </div>
         ))}
+      </div>
+
+      {/* Overlay: does not shrink the question layout */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 16,
+          right: 16,
+          zIndex: 5,
+          pointerEvents: 'none',
+        }}
+      >
+        <PixelCountdown {...countdownProps} style={dialStyle} />
       </div>
     </div>
   );
@@ -138,14 +146,15 @@ function Preview() {
             </select>
           </label>
           <label style={{ marginRight: 14 }}>
-            Letter
+            Accent colour
             <select
               value={letter}
               onChange={(e) => setLetter(e.target.value)}
               style={fieldStyle}
+              title="Static dial colour for testing (A-D match trivia choice colours)"
             >
               {Object.keys(ACCENTS).map((k) => (
-                <option key={k} value={k}>{k}</option>
+                <option key={k} value={k}>{k} ({ACCENTS[k].accent})</option>
               ))}
             </select>
           </label>
@@ -178,6 +187,8 @@ function Preview() {
               onChange={(e) => setSize(e.target.value)}
               style={fieldStyle}
             >
+              <option value="8vh">8vh</option>
+              <option value="10vh">10vh</option>
               <option value="14vh">14vh (small corner)</option>
               <option value="18vh">18vh (default corner)</option>
               <option value="22vh">22vh (large corner)</option>
