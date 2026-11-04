@@ -1,10 +1,10 @@
 .pt {
-  /* Size of the whole dial. 400px on a 1920x1080 TV; or use e.g. 20vh */
-  --pt-size: 400px;
+  /* Default: teal accent (choice D), ~10% of viewport height on TVs */
+  --pt-size: 10vh;
 
-  --pt-accent: #2563eb;
+  --pt-accent: #0d9488;
   /* Precomputed dark shade of accent (no color-mix on Chrome 63 / Tizen 5) */
-  --pt-shadow: #0f2c5e;
+  --pt-shadow: #053b36;
   --pt-low: #e8433f;
   --pt-low-shadow: #5c1b19;
   --pt-track: #2b2b44;

@@ -91,8 +91,8 @@ function Preview() {
   const [running, setRunning] = useState(true);
   const [tick, setTick] = useState(true);
   const [lowAt, setLowAt] = useState(5);
-  const [letter, setLetter] = useState('B');
-  const [size, setSize] = useState('18vh');
+  const [letter, setLetter] = useState('D');
+  const [size, setSize] = useState('10vh');
   const [manualProgress, setManualProgress] = useState(0.35);
   const [manualLow, setManualLow] = useState(false);
   const [runKey, setRunKey] = useState(0);
