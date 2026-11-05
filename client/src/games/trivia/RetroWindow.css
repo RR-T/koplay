@@ -134,6 +134,7 @@
   z-index: 20;
   background: rgba(5, 5, 12, 0.7);
   pointer-events: none;
+  animation: qa-dim-in 300ms ease-out both;
 }
 
 /* Winning bar / label: above dim, below popup */
@@ -168,6 +169,24 @@
   55%  { transform: scale(1.06); opacity: 1; }
   100% { transform: scale(1);    opacity: 1; }
 }
+
+/* Exit: shrink + fade (duration must match EXPLANATION_OUT_MS in TriviaTV) */
+.qa.qa-leaving { animation: qa-out 220ms ease-in both; }
+.qa-dim.qa-leaving { animation: qa-dim-out 220ms ease-in both; }
+
+@keyframes qa-out {
+  0%   { transform: scale(1);    opacity: 1; }
+  100% { transform: scale(0.85); opacity: 0; }
+}
+@keyframes qa-dim-in {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes qa-dim-out {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .qa { animation: none; }
+  .qa, .qa.qa-leaving, .qa-dim, .qa-dim.qa-leaving { animation: none; }
 }

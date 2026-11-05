@@ -1,6 +1,5 @@
 const QUESTION_TIME = 60;
 const MIN_PLAYERS = 1;
-const EXPLANATION_REVEAL_MS = 3000;
 
 const quizStore = require('../quizStore');
 const { ROLE_GENERATE, ROLE_ADMIN } = require('../users');
@@ -228,23 +227,14 @@ function showReveal(session) {
   gs.timer = null;
 
   session.broadcastState();
-
-  if (gs.explanation) {
-    p.phaseTimer = setTimeout(() => {
-      p.phaseTimer = null;
-      if (!session.gameState || session.gameState.phase !== 'reveal') return;
-      session.gameState.explanationVisible = true;
-      session.broadcastState();
-    }, EXPLANATION_REVEAL_MS);
-  }
 }
 
-function showExplanation(session) {
+// Host-controlled: show/hide the explanation popup on the TV during reveal
+function toggleExplanation(session) {
   if (!session.gameState || session.gameState.phase !== 'reveal') return;
   const gs = session.gameState;
-  if (!gs.explanation || gs.explanationVisible) return;
-  clearTimer(session);
-  gs.explanationVisible = true;
+  if (!gs.explanation) return;
+  gs.explanationVisible = !gs.explanationVisible;
   session.broadcastState();
 }
 
@@ -568,9 +558,9 @@ module.exports = {
       return;
     }
 
-    if (action.type === 'showExplanation') {
+    if (action.type === 'toggleExplanation') {
       if (playerId !== session.hostId) return;
-      showExplanation(session);
+      toggleExplanation(session);
       return;
     }
 
@@ -579,11 +569,6 @@ module.exports = {
       if (session.gameState.phase === 'roundIntro') {
         startQuestion(session);
       } else if (session.gameState.phase === 'reveal') {
-        const gs = session.gameState;
-        if (gs.explanation && !gs.explanationVisible) {
-          showExplanation(session);
-          return;
-        }
         nextQuestion(session);
       } else if (session.gameState.phase === 'roundEnd') {
         nextRound(session);
