@@ -282,14 +282,6 @@ io.on('connection', (socket) => {
         socket.emit('error', { message: 'Already joined' });
         return;
       }
-      // A phone that lost its stored secret can reclaim a disconnected seat by name,
-      // even after the game has locked joining.
-      const reclaimId = session.findDisconnectedByName(name.trim());
-      if (reclaimId) {
-        bindPlayer(room, socket, reclaimId);
-        broadcastState(gameCode);
-        return;
-      }
       if (session.gameState?.joinLocked) {
         socket.emit('error', { message: 'Game already started, cannot join' });
         return;

@@ -63,16 +63,6 @@ class SessionManager {
     return null;
   }
 
-  // A disconnected player with this name, for phones that lost their stored
-  // secret (cleared storage, different browser) to take their seat back.
-  findDisconnectedByName(name) {
-    const lower = name.toLowerCase();
-    for (const [id, player] of this.players) {
-      if (!player.connected && player.name.toLowerCase() === lower) return id;
-    }
-    return null;
-  }
-
   // Bind a (new) socket to an existing player.
   attachSocket(id, socketId) {
     const player = this.players.get(id);
