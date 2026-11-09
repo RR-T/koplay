@@ -8,6 +8,8 @@ import { useSocket } from '../../shared/context/SocketContext';
 import { QuizAnswerOverlay } from './RetroWindow';
 
 const CHOICE_LABELS = ['A', 'B', 'C', 'D'];
+// Must match the qa-out animation duration in RetroWindow.css
+const EXPLANATION_OUT_MS = 220;
 const CHOICE_BG = ['bg-red-600', 'bg-blue-600', 'bg-amber-500', 'bg-teal-600'];
 const CHOICE_BAR = ['bg-red-500', 'bg-blue-500', 'bg-amber-400', 'bg-teal-500'];
 
@@ -232,6 +234,18 @@ function RevealPhase({ gs, players }) {
   const counts = gs.choiceCounts || [0, 0, 0, 0];
   const maxCount = Math.max(...counts, 1);
   const showExplanation = !!(gs.explanation && gs.explanationVisible);
+  /* Keep the popup mounted briefly after the host hides it so it can animate out */
+  const [overlayLingering, setOverlayLingering] = useState(false);
+  useEffect(() => {
+    if (showExplanation) {
+      setOverlayLingering(true);
+      return undefined;
+    }
+    const t = setTimeout(() => setOverlayLingering(false), EXPLANATION_OUT_MS);
+    return () => clearTimeout(t);
+  }, [showExplanation]);
+  const overlayMounted = showExplanation || overlayLingering;
+  const overlayLeaving = overlayMounted && !showExplanation;
   const correctIndex = gs.correctIndex;
   const correctText = (gs.choices && correctIndex != null) ? gs.choices[correctIndex] : '';
   const correctLabel = correctIndex != null ? CHOICE_LABELS[correctIndex] : '';
@@ -256,7 +270,7 @@ function RevealPhase({ gs, players }) {
           {gs.choices.map((choice, i) => {
             const count = counts[i];
             const isCorrect = i === gs.correctIndex;
-            const raise = showExplanation && isCorrect;
+            const raise = overlayMounted && isCorrect;
             return (
               <div
                 key={i}
@@ -279,7 +293,7 @@ function RevealPhase({ gs, players }) {
       <div className="flex gap-6 px-8">
         {gs.choices.map((choice, i) => {
           const isCorrect = i === gs.correctIndex;
-          const raise = showExplanation && isCorrect;
+          const raise = overlayMounted && isCorrect;
           return (
             <div
               key={i}
@@ -296,8 +310,9 @@ function RevealPhase({ gs, players }) {
 
       <AnsweredRow entries={gs.playerResults || []} />
 
-      {showExplanation && (
+      {overlayMounted && (
         <QuizAnswerOverlay
+          leaving={overlayLeaving}
           letter={correctLabel}
           answer={correctText}
           explanation={gs.explanation}

@@ -453,9 +453,9 @@ export default function TriviaPhone({ gameState: gs, myId, isHost, players, emit
 
   if (gs.phase === 'reveal') {
     const myPlayer = players.find((p) => p.id === myId);
-    const me = gs.playerResults?.find((r) => myPlayer && r.name === myPlayer.name);
-    const needsExplanation = !!(gs.explanation && !gs.explanationVisible);
     const me = gs.playerResults?.find((r) => (r.id ? r.id === myId : myPlayer && r.name === myPlayer.name));
+    const hasExplanation = !!gs.explanation;
+    const explanationShown = hasExplanation && !!gs.explanationVisible;
 
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 p-6">
@@ -467,14 +467,27 @@ export default function TriviaPhone({ gameState: gs, myId, isHost, players, emit
         <p className="text-muted-light">Your score: {gs.scores?.[myId] || 0}</p>
         <AwayBanner gs={gs} players={players} isHost={isHost} emit={emit} />
         {isHost && (
-          <button
-            onClick={() => emit('game:action', {
-              type: needsExplanation ? 'showExplanation' : 'advance',
-            })}
-            className="mt-4 w-full max-w-xs py-4 bg-accent hover:bg-accent-hover text-white text-xl font-bold rounded-xl"
-          >
-            {needsExplanation ? 'Show explanation' : 'Next Question'}
-          </button>
+          <div className="mt-4 w-full max-w-xs flex gap-3">
+            {hasExplanation && (
+              <button
+                onClick={() => emit('game:action', { type: 'toggleExplanation' })}
+                aria-pressed={explanationShown}
+                className={`flex-1 py-4 border text-white text-lg font-bold rounded-xl transition-colors ${
+                  explanationShown
+                    ? 'bg-surface-light border-white'
+                    : 'bg-surface-light border-muted/30 hover:bg-surface-light/80'
+                }`}
+              >
+                {explanationShown ? 'Hide why' : 'Show why'}
+              </button>
+            )}
+            <button
+              onClick={() => emit('game:action', { type: 'advance' })}
+              className="flex-1 py-4 bg-accent hover:bg-accent-hover text-white text-xl font-bold rounded-xl"
+            >
+              Next Question
+            </button>
+          </div>
         )}
       </div>
     );

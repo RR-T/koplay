@@ -66,15 +66,17 @@ export function QuizAnswer({
 
 /*
   Dim scrim + centered card as separate layers.
+  Pass `leaving` to play the exit animation before unmounting.
   Mark the correct bar/label with className "qa-winner" so they sit above the
   dim (z-25) but still under the popup (z-40).
 */
-export function QuizAnswerOverlay(props) {
+export function QuizAnswerOverlay({ leaving = false, className = '', ...props }) {
+  const leaveClass = leaving ? 'qa-leaving' : '';
   return (
     <>
-      <div className="qa-dim" aria-hidden="true" />
+      <div className={`qa-dim ${leaveClass}`.trim()} aria-hidden="true" />
       <div className="qa-popup">
-        <QuizAnswer {...props} />
+        <QuizAnswer {...props} className={`${className} ${leaveClass}`.trim()} />
       </div>
     </>
   );
