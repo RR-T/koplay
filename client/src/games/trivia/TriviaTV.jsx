@@ -7,8 +7,11 @@ import { PixelTimer } from '../../shared/components/PixelTimer';
 import { useTimer } from '../../shared/hooks/useTimer';
 import { playSoundById, createMusicElement } from '../../shared/sounds';
 import { useSocket } from '../../shared/context/SocketContext';
+import { QuizAnswerOverlay } from './RetroWindow';
 
 const CHOICE_LABELS = ['A', 'B', 'C', 'D'];
+// Must match the qa-out animation duration in RetroWindow.css
+const EXPLANATION_OUT_MS = 220;
 const CHOICE_BG = ['bg-red-600', 'bg-blue-600', 'bg-amber-500', 'bg-teal-600'];
 const CHOICE_BAR = ['bg-red-500', 'bg-blue-500', 'bg-amber-400', 'bg-teal-500'];
 
@@ -164,15 +167,17 @@ function CharacterSelectPhase({ gs, players, gameCode }) {
           {players.map((p) => {
             const avatar = getAvatar(p.avatarId);
             return (
-              <div key={p.id} className="flex flex-col items-center gap-2">
+              <div key={p.id} className={`flex flex-col items-center ${p.connected === false ? 'opacity-40' : ''}`}>
                 {avatar
                   ? <PixelAvatar avatar={avatar} size={72} />
                   : <div className="w-[72px] h-[72px] rounded-full border-2 border-white/30 bg-white/10 flex items-center justify-center">
                       <span className="text-white/40 text-2xl">?</span>
                     </div>
                 }
-                <span className="text-white text-lg font-semibold">{p.name}</span>
-                {p.avatarId && <span className="text-white/60 text-sm">Ready</span>}
+                <span className="text-white text-lg font-semibold mt-2">{p.name}</span>
+                {p.connected === false
+                  ? <span className="text-white/60 text-sm mt-2">Reconnecting...</span>
+                  : p.avatarId && <span className="text-white/60 text-sm mt-2">Ready</span>}
               </div>
             );
           })}
@@ -258,10 +263,29 @@ function QuestionPhase({ gs, showAnswers }) {
 function RevealPhase({ gs, players }) {
   const counts = gs.choiceCounts || [0, 0, 0, 0];
   const maxCount = Math.max(...counts, 1);
+  const showExplanation = !!(gs.explanation && gs.explanationVisible);
+  /* Keep the popup mounted briefly after the host hides it so it can animate out */
+  const [overlayLingering, setOverlayLingering] = useState(false);
+  useEffect(() => {
+    if (showExplanation) {
+      setOverlayLingering(true);
+      return undefined;
+    }
+    const t = setTimeout(() => setOverlayLingering(false), EXPLANATION_OUT_MS);
+    return () => clearTimeout(t);
+  }, [showExplanation]);
+  const overlayMounted = showExplanation || overlayLingering;
+  const overlayLeaving = overlayMounted && !showExplanation;
+  const correctIndex = gs.correctIndex;
+  const correctText = (gs.choices && correctIndex != null) ? gs.choices[correctIndex] : '';
+  const correctLabel = correctIndex != null ? CHOICE_LABELS[correctIndex] : '';
+  /* Harder dim on losers while the popup is up; winner stays full via qa-winner */
+  const loserDim = showExplanation ? 'opacity-15' : 'opacity-20';
+  const loserLabelDim = showExplanation ? 'opacity-15' : 'opacity-25';
 
   return (
     <div
-      className="h-screen flex flex-col p-6 gap-4 bg-cover bg-center"
+      className="relative h-screen flex flex-col p-6 gap-4 bg-cover bg-center"
       style={{ backgroundImage: 'url(/tv/background.jpg)' }}
     >
       <div className="text-2xl font-bold text-white text-center bg-black/40 rounded-xl px-4 py-2">
@@ -276,13 +300,17 @@ function RevealPhase({ gs, players }) {
           {gs.choices.map((choice, i) => {
             const count = counts[i];
             const isCorrect = i === gs.correctIndex;
+            const raise = overlayMounted && isCorrect;
             return (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+              <div
+                key={i}
+                className={`flex-1 flex flex-col items-center gap-1 ${raise ? 'qa-winner' : ''}`}
+              >
                 <span className={`text-2xl font-bold ${isCorrect ? 'text-white' : 'text-white/60'}`}>
                   {count}{isCorrect ? ' ✓' : ''}
                 </span>
                 <div
-                  className={`w-full rounded-t-xl transition-all duration-700 ${CHOICE_BAR[i]} ${isCorrect ? '' : 'opacity-20'}`}
+                  className={`w-full rounded-t-xl transition-all duration-700 ${CHOICE_BAR[i]} ${isCorrect ? '' : loserDim}`}
                   style={{ height: `${(count / maxCount) * 50}vh` }}
                 />
               </div>
@@ -295,10 +323,13 @@ function RevealPhase({ gs, players }) {
       <div className="flex gap-6 px-8">
         {gs.choices.map((choice, i) => {
           const isCorrect = i === gs.correctIndex;
+          const raise = overlayMounted && isCorrect;
           return (
             <div
               key={i}
-              className={`flex-1 rounded-xl px-3 py-3 text-center ${CHOICE_BG[i]} ${isCorrect ? 'ring-4 ring-white' : 'opacity-25'}`}
+              className={`flex-1 rounded-xl px-3 py-3 text-center ${CHOICE_BG[i]} ${
+                isCorrect ? 'ring-4 ring-white' : loserLabelDim
+              } ${raise ? 'qa-winner' : ''}`}
             >
               <span className="text-white font-bold text-lg block">{CHOICE_LABELS[i]}</span>
               <span className="text-white/90 text-sm leading-snug">{choice}</span>
@@ -308,6 +339,16 @@ function RevealPhase({ gs, players }) {
       </div>
 
       <AnsweredRow entries={gs.playerResults || []} />
+
+      {overlayMounted && (
+        <QuizAnswerOverlay
+          leaving={overlayLeaving}
+          letter={correctLabel}
+          answer={correctText}
+          explanation={gs.explanation}
+          label="CORRECT ANSWER"
+        />
+      )}
     </div>
   );
 }
