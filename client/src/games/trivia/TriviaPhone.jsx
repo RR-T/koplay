@@ -453,6 +453,8 @@ export default function TriviaPhone({ gameState: gs, myId, isHost, players, emit
 
   if (gs.phase === 'reveal') {
     const myPlayer = players.find((p) => p.id === myId);
+    const me = gs.playerResults?.find((r) => myPlayer && r.name === myPlayer.name);
+    const needsExplanation = !!(gs.explanation && !gs.explanationVisible);
     const me = gs.playerResults?.find((r) => (r.id ? r.id === myId : myPlayer && r.name === myPlayer.name));
 
     return (
@@ -466,10 +468,12 @@ export default function TriviaPhone({ gameState: gs, myId, isHost, players, emit
         <AwayBanner gs={gs} players={players} isHost={isHost} emit={emit} />
         {isHost && (
           <button
-            onClick={() => emit('game:action', { type: 'advance' })}
+            onClick={() => emit('game:action', {
+              type: needsExplanation ? 'showExplanation' : 'advance',
+            })}
             className="mt-4 w-full max-w-xs py-4 bg-accent hover:bg-accent-hover text-white text-xl font-bold rounded-xl"
           >
-            Next Question
+            {needsExplanation ? 'Show explanation' : 'Next Question'}
           </button>
         )}
       </div>

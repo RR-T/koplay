@@ -1,8 +1,10 @@
 const QUESTION_TIME = 60;
 const MIN_PLAYERS = 1;
+const EXPLANATION_REVEAL_MS = 3000;
 
 const quizStore = require('../quizStore');
 const { ROLE_GENERATE, ROLE_ADMIN } = require('../users');
+const { EXPLANATION_MAX, normalizeRoundsExplanations } = require('../quizValidate');
 
 function getVisibleQuizzes(session) {
   const auth = session.authUser || null;
@@ -81,14 +83,15 @@ async function generateQuestions(topic) {
   if (!apiKey) throw new Error('GEMINI_API_KEY is not set in environment');
 
   const prompt = `Generate a trivia quiz about "${topic}" with 3 difficulty rounds.
-Return ONLY a valid JSON object with no markdown formatting, code blocks, or explanation.
+Return ONLY a valid JSON object with no markdown formatting or code blocks.
 Use this exact structure:
 {
   "rounds": [
     {
       "name": "Easy",
       "questions": [
-        {"question": "...", "choices": ["A", "B", "C", "D"], "answer": 0}
+        {"question": "...", "choices": ["A", "B", "C", "D"], "answer": 0},
+        {"question": "...", "choices": ["A", "B", "C", "D"], "answer": 1, "explanation": "..."}
       ]
     },
     {"name": "Medium", "questions": [...]},
@@ -101,7 +104,8 @@ Rules:
 - "answer" is the 0-based index of the correct choice (0, 1, 2, or 3)
 - Easy questions should be general knowledge, Medium moderately challenging, Hard quite difficult
 - All questions must be factually accurate
-- Vary which index the correct answer appears at`;
+- Vary which index the correct answer appears at
+- Optional "explanation": a short why-the-answer-is-correct (1-2 sentences, aim under 260 characters, hard max ${EXPLANATION_MAX}). Include it ONLY when the correct choice text alone would leave players unclear (jargon, terse names, non-obvious facts). Omit the field entirely when the choice is self-explanatory. Never use an empty string.`;
 
   const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
   const url = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`;
@@ -117,7 +121,7 @@ Rules:
   if (!response.ok) {
     const text = await response.text();
     if (response.status === 429) {
-      throw new Error('Gemini quota exceeded — check your API plan or try a different model');
+      throw new Error('Gemini quota exceeded - check your API plan or try a different model');
     }
     throw new Error(`Gemini API error ${response.status}: ${text.slice(0, 200)}`);
   }
@@ -137,6 +141,9 @@ Rules:
     }
   }
 
+  const explErr = normalizeRoundsExplanations(parsed.rounds);
+  if (explErr) throw new Error(explErr);
+
   return parsed.rounds;
 }
 
@@ -151,6 +158,8 @@ function showRoundIntro(session) {
   gs.question = null;
   gs.image = null;
   gs.choices = null;
+  gs.explanation = null;
+  gs.explanationVisible = false;
   gs.timer = null;
 
   session.broadcastState();
@@ -174,6 +183,8 @@ function startQuestion(session) {
   gs.correctIndex = null;
   gs.playerResults = null;
   gs.choiceCounts = null;
+  gs.explanation = null;
+  gs.explanationVisible = false;
   gs.recentAnswers = [];
   gs.earlyEnd = false;
   gs.timer = {
@@ -232,8 +243,28 @@ function showReveal(session) {
   gs.correctIndex = q.answer;
   gs.playerResults = playerResults;
   gs.choiceCounts = choiceCounts;
+  gs.explanation = q.explanation || null;
+  gs.explanationVisible = false;
   gs.timer = null;
 
+  session.broadcastState();
+
+  if (gs.explanation) {
+    p.phaseTimer = setTimeout(() => {
+      p.phaseTimer = null;
+      if (!session.gameState || session.gameState.phase !== 'reveal') return;
+      session.gameState.explanationVisible = true;
+      session.broadcastState();
+    }, EXPLANATION_REVEAL_MS);
+  }
+}
+
+function showExplanation(session) {
+  if (!session.gameState || session.gameState.phase !== 'reveal') return;
+  const gs = session.gameState;
+  if (!gs.explanation || gs.explanationVisible) return;
+  clearTimer(session);
+  gs.explanationVisible = true;
   session.broadcastState();
 }
 
@@ -265,6 +296,8 @@ function showRoundEnd(session) {
   gs.correctIndex = null;
   gs.playerResults = null;
   gs.choiceCounts = null;
+  gs.explanation = null;
+  gs.explanationVisible = false;
   gs.timer = null;
 
   session.broadcastState();
@@ -300,6 +333,8 @@ function gameOver(session) {
   gs.correctIndex = null;
   gs.playerResults = null;
   gs.choiceCounts = null;
+  gs.explanation = null;
+  gs.explanationVisible = false;
 
   const ranking = activePlayers(session).map((id) => ({
     id,
@@ -345,6 +380,8 @@ function startWithRounds(session, rounds, topic) {
     correctIndex: null,
     playerResults: null,
     choiceCounts: null,
+    explanation: null,
+    explanationVisible: false,
     scores: null,
     recentAnswers: [],
     earlyEnd: false,
@@ -357,7 +394,7 @@ function startWithRounds(session, rounds, topic) {
 module.exports = {
   id: 'trivia',
   name: 'Trivia',
-  description: 'Answer questions across 3 rounds — easy, medium, hard!',
+  description: 'Answer questions across 3 rounds - easy, medium, hard!',
 
   init(session) {
     const players = activePlayers(session);
@@ -395,6 +432,8 @@ module.exports = {
       correctIndex: null,
       playerResults: null,
       choiceCounts: null,
+      explanation: null,
+      explanationVisible: false,
       scores: null,
       recentAnswers: [],
       earlyEnd: false,
@@ -551,6 +590,9 @@ module.exports = {
       return;
     }
 
+    if (action.type === 'showExplanation') {
+      if (playerId !== session.hostId) return;
+      showExplanation(session);
     // Host chooses to carry on without everyone currently disconnected. They score
     // nothing while away, and are waited for again as soon as they reconnect.
     if (action.type === 'skipDisconnected') {
@@ -575,6 +617,11 @@ module.exports = {
       if (session.gameState.phase === 'roundIntro') {
         startQuestion(session);
       } else if (session.gameState.phase === 'reveal') {
+        const gs = session.gameState;
+        if (gs.explanation && !gs.explanationVisible) {
+          showExplanation(session);
+          return;
+        }
         nextQuestion(session);
       } else if (session.gameState.phase === 'roundEnd') {
         nextRound(session);
@@ -589,7 +636,7 @@ module.exports = {
       if (playerId !== session.hostId) return;
 
       this.init(session);
-      // Don't broadcast here — index.js will auto-load a pushed quiz first if set
+      // Don't broadcast here - index.js will auto-load a pushed quiz first if set
       return;
     }
   },
